@@ -4,8 +4,7 @@ def calculate_required_return(current_value, cost_basis, tax_rate):
     selling a current one and paying capital gains tax.
     """
     if current_value <= 0 or cost_basis <= 0 or not (0 <= tax_rate < 1):
-        return {"note": "Values must be positive and tax rate between 0 and 1."
-        }  
+        return {"note": "Values must be positive and tax rate must be between 0 and 1."}
 
     if current_value < cost_basis:
         return {

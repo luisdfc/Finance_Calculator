@@ -4,14 +4,15 @@ def calculate_optimal_dca(total_capital, share_price, commission_fee, annualized
     """
     Calculates the optimal number of trades and the price-drop trigger for a DCA strategy.
     """
-    if share_price <= 0 or total_capital <= 0:
-        return {"error": "Total capital and share price must be greater than zero."}
+    if total_capital <= 0 or share_price <= 0 or commission_fee < 0 or annualized_volatility < 0:
+        return {"error": "All inputs must be positive numbers (commission can be 0)."}
 
     # Constraint 1: Total commissions should not exceed 5% of total capital.
     if commission_fee > 0:
         n_commission_cap = math.floor((0.05 * total_capital) / commission_fee)
     else:
-        n_commission_cap = math.floor(total_capital / share_price)
+        n_commission_cap = math.floor(total_capital / share_price) if share_price > 0 else 0
+
 
     # Constraint 2: Each trade must be large enough to buy at least one share.
     if (share_price + commission_fee) > 0:

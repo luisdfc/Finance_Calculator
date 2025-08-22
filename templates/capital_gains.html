@@ -5,40 +5,34 @@
 {% block content %}
 <div class="max-w-5xl mx-auto">
     <div class="text-center mb-12 fade-in">
-        <h1 class="text-4xl font-bold text-white">Capital Gains Opportunity Cost</h1>
+        <h1 class="text-4xl font-extrabold text-white">Capital Gains Opportunity Cost</h1>
         <p class="text-gray-400 mt-2">Is it worth selling an asset to invest elsewhere? Find the breakeven return.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        <!-- Form Section -->
-        <div class="lg:col-span-2 bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl fade-in">
+        <div class="lg:col-span-2 bg-gray-800/50 p-8 rounded-2xl fade-in">
             <form method="POST">
                 <div class="space-y-5">
                     <div>
                         <label for="current_value" class="block text-sm font-medium text-gray-400">Current Investment Value (€)</label>
-                        <input type="number" name="current_value" id="current_value" value="1500" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input type="number" name="current_value" id="current_value" value="{{ form_data.current_value | default(1500) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
                         <label for="cost_basis" class="block text-sm font-medium text-gray-400">Original Cost Basis (€)</label>
-                        <input type="number" name="cost_basis" id="cost_basis" value="1000" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input type="number" name="cost_basis" id="cost_basis" value="{{ form_data.cost_basis | default(1000) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
                         <label for="tax_rate" class="flex items-center text-sm font-medium text-gray-400">
                             Capital Gains Tax Rate
-                             <span class="tooltip ml-2">
-                                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
-                                <span class="tooltiptext">Enter your tax rate on profits as a decimal (e.g., 0.19 for 19%).</span>
-                            </span>
                         </label>
-                        <input type="number" name="tax_rate" id="tax_rate" value="0.19" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input type="number" name="tax_rate" id="tax_rate" value="{{ form_data.tax_rate | default(0.19) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                 </div>
-                <button type="submit" class="mt-8 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">Calculate Return</button>
+                <button type="submit" class="mt-8 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 no-tap-highlight">Calculate Return</button>
             </form>
         </div>
 
-        <!-- Result Section -->
-        <div class="lg:col-span-3 fade-in" style="animation-delay: 0.2s;">
+        <div class="lg:col-span-3 fade-in-delay">
             {% if result %}
                 {% if result.error %}
                     <div class="bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg" role="alert">
@@ -51,7 +45,7 @@
                         <p>{{ result.note }}</p>
                     </div>
                 {% else %}
-                    <div class="bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl">
+                    <div class="bg-gray-800/50 p-8 rounded-2xl">
                         <h2 class="text-2xl font-bold text-white mb-6">Breakeven Analysis</h2>
                         <div class="text-center mb-6">
                             <p class="text-gray-400 text-lg">Required return on new investment:</p>
@@ -76,7 +70,7 @@
                     </div>
                 {% endif %}
             {% else %}
-                <div class="bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl text-center h-full flex flex-col justify-center">
+                <div class="bg-gray-800/50 p-8 rounded-2xl text-center h-full flex flex-col justify-center">
                     <h3 class="text-xl font-semibold text-white">Your analysis will appear here</h3>
                     <p class="text-gray-500 mt-2">Fill out the form to calculate the breakeven return.</p>
                 </div>

@@ -5,54 +5,52 @@
 {% block content %}
 <div class="max-w-5xl mx-auto">
     <div class="text-center mb-12 fade-in">
-        <h1 class="text-4xl font-bold text-white">Compound Interest Calculator</h1>
+        <h1 class="text-4xl font-extrabold text-white">Compound Interest Calculator</h1>
         <p class="text-gray-400 mt-2">Project the future value of your investments and visualize its growth.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        <!-- Form Section -->
-        <div class="lg:col-span-2 bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl fade-in">
+        <div class="lg:col-span-2 bg-gray-800/50 p-8 rounded-2xl fade-in">
             <form method="POST">
                 <div class="space-y-5">
                     <div>
                         <label for="initial_balance" class="block text-sm font-medium text-gray-400">Initial Balance (€)</label>
-                        <input type="number" name="initial_balance" id="initial_balance" value="1000" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input type="number" name="initial_balance" id="initial_balance" value="{{ form_data.initial_balance | default(1000) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
                         <label for="periodic_deposit" class="block text-sm font-medium text-gray-400">Periodic Deposit (€)</label>
-                        <input type="number" name="periodic_deposit" id="periodic_deposit" value="100" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input type="number" name="periodic_deposit" id="periodic_deposit" value="{{ form_data.periodic_deposit | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
                         <label for="frequency" class="block text-sm font-medium text-gray-400">Deposit Frequency</label>
-                        <select name="frequency" id="frequency" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="12">Monthly</option>
-                            <option value="52">Weekly</option>
-                            <option value="26">Bi-Weekly</option>
-                            <option value="1">Annually</option>
+                        <select name="frequency" id="frequency" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="12" {% if form_data.frequency == '12' %}selected{% endif %}>Monthly</option>
+                            <option value="52" {% if form_data.frequency == '52' %}selected{% endif %}>Weekly</option>
+                            <option value="26" {% if form_data.frequency == '26' %}selected{% endif %}>Bi-Weekly</option>
+                            <option value="1" {% if form_data.frequency == '1' %}selected{% endif %}>Annually</option>
                         </select>
                     </div>
                     <div>
                         <label for="deposit_timing" class="block text-sm font-medium text-gray-400">Deposit Timing</label>
-                        <select name="deposit_timing" id="deposit_timing" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="start">Beginning of Period</option>
-                            <option value="end">End of Period</option>
+                        <select name="deposit_timing" id="deposit_timing" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="start" {% if form_data.deposit_timing == 'start' %}selected{% endif %}>Beginning of Period</option>
+                            <option value="end" {% if form_data.deposit_timing == 'end' %}selected{% endif %}>End of Period</option>
                         </select>
                     </div>
                     <div>
                         <label for="interest_rate" class="block text-sm font-medium text-gray-400">Annual Interest Rate (%)</label>
-                        <input type="number" name="interest_rate" id="interest_rate" value="7" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input type="number" name="interest_rate" id="interest_rate" value="{{ form_data.interest_rate | default(7) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
                         <label for="duration" class="block text-sm font-medium text-gray-400">Duration (Years)</label>
-                        <input type="number" name="duration" id="duration" value="10" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <input type="number" name="duration" id="duration" value="{{ form_data.duration | default(10) }}" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                 </div>
-                <button type="submit" class="mt-8 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">Calculate</button>
+                <button type="submit" class="mt-8 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 no-tap-highlight">Calculate</button>
             </form>
         </div>
 
-        <!-- Result Section -->
-        <div class="lg:col-span-3 fade-in" style="animation-delay: 0.2s;">
+        <div class="lg:col-span-3 fade-in-delay">
             {% if result %}
                 {% if result.error %}
                     <div class="bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg" role="alert">
@@ -60,7 +58,7 @@
                         <p>{{ result.error }}</p>
                     </div>
                 {% else %}
-                    <div class="bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl">
+                    <div class="bg-gray-800/50 p-8 rounded-2xl">
                         <h2 class="text-2xl font-bold text-white mb-6">Calculation Results</h2>
                         <div class="space-y-4">
                             <div class="flex justify-between items-baseline">
@@ -87,7 +85,7 @@
                     </div>
                 {% endif %}
             {% else %}
-                <div class="bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl text-center h-full flex flex-col justify-center">
+                <div class="bg-gray-800/50 p-8 rounded-2xl text-center h-full flex flex-col justify-center">
                     <h3 class="text-xl font-semibold text-white">Your results will appear here</h3>
                     <p class="text-gray-500 mt-2">Fill out the form and click "Calculate" to see your investment projection.</p>
                 </div>
@@ -98,7 +96,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const chartDataJson = '{{ result.chart_json | safe if result and result.chart_json else "" }}';
@@ -137,7 +135,7 @@
                             y: {
                                 stacked: true,
                                 grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                                ticks: { 
+                                ticks: {
                                     color: '#9ca3af',
                                     callback: function(value) {
                                         return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value);

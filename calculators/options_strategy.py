@@ -2,11 +2,11 @@ def calculate_expected_move(stock_price, call_price, put_price):
     """
     Calculates the market's expected price move based on the ATM straddle cost.
     """
-    if stock_price <= 0:
-        return {"error": "Stock price must be positive."}
-        
+    if stock_price <= 0 or call_price < 0 or put_price < 0:
+        return {"error": "Prices must be positive numbers."}
+
     expected_move = call_price + put_price
-    expected_percentage = (expected_move / stock_price)
+    expected_percentage = (expected_move / stock_price) if stock_price > 0 else 0
     upper_bound = stock_price + expected_move
     lower_bound = stock_price - expected_move
 
@@ -21,6 +21,9 @@ def compare_sell_vs_exercise(stock_price, strike_price, option_premium):
     """
     Compares the profit from selling an in-the-money option vs. exercising it.
     """
+    if stock_price <= 0 or strike_price <= 0 or option_premium < 0:
+        return {"error": "Prices must be positive numbers."}
+
     if stock_price <= strike_price:
         return {"note": "This calculation is for an in-the-money call option where the stock price is greater than the strike price."}
 
