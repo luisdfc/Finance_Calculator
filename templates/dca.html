@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>DCA Strategy Optimizer</h2>
+<form method="post">
+    <label>Total Capital: <input type="number" step="any" name="capital" required></label><br>
+    <label>Current Share Price: <input type="number" step="any" name="price" required></label><br>
+    <label>Commission Fee: <input type="number" step="any" name="fee" required></label><br>
+    <label>Annualized Volatility (decimal): <input type="number" step="any" name="volatility" required></label><br>
+    <button type="submit">Optimize</button>
+</form>
+{% if result %}
+    {% if result.error %}
+        <p class="error">{{ result.error }}</p>
+    {% else %}
+        <p>Optimal Trades: {{ result.optimal_trades }}</p>
+        <p>Price-Drop Trigger: {{ (result.trigger_percentage*100)|round(2) }}%</p>
+        <p>Capital per Trade: {{ result.capital_per_trade|round(2) }}</p>
+    {% endif %}
+{% endif %}
+{% endblock %}

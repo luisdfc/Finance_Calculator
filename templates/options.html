@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Options Strategy Calculator</h2>
+<form method="post">
+    <label>Select Calculation:
+        <select name="calc_type">
+            <option value="move">Market Expected Move</option>
+            <option value="sell">Sell vs Exercise</option>
+        </select>
+    </label><br>
+    <div id="move-fields">
+        <label>Stock Price: <input type="number" step="any" name="stock_price"></label><br>
+        <label>ATM Call Price: <input type="number" step="any" name="call_price"></label><br>
+        <label>ATM Put Price: <input type="number" step="any" name="put_price"></label><br>
+    </div>
+    <div id="sell-fields">
+        <label>Stock Price: <input type="number" step="any" name="stock_price_sell"></label><br>
+        <label>Strike Price: <input type="number" step="any" name="strike_price"></label><br>
+        <label>Option Premium: <input type="number" step="any" name="option_premium"></label><br>
+    </div>
+    <button type="submit">Calculate</button>
+</form>
+{% if result %}
+    {% if result.error %}
+        <p class="error">{{ result.error }}</p>
+    {% elif result.type == 'move' %}
+        <p>Expected Move: {{ result.expected_move|round(2) }}</p>
+        <p>Expected Move %: {{ (result.expected_percentage*100)|round(2) }}%</p>
+        <p>Range: {{ result.lower_bound|round(2) }} - {{ result.upper_bound|round(2) }}</p>
+    {% else %}
+        <p>Profit from Selling: {{ result.profit_from_selling|round(2) }}</p>
+        <p>Profit from Exercising: {{ result.profit_from_exercising|round(2) }}</p>
+        <p>Extrinsic Value: {{ result.extrinsic_value|round(2) }}</p>
+    {% endif %}
+{% endif %}
+<script>
+// simple show/hide fields based on selection
+const select = document.querySelector('select[name="calc_type"]');
+const moveFields = document.getElementById('move-fields');
+const sellFields = document.getElementById('sell-fields');
+function toggle(){
+ if(select.value === 'move'){ moveFields.style.display='block'; sellFields.style.display='none'; }
+ else { moveFields.style.display='none'; sellFields.style.display='block'; }
+}
+select.addEventListener('change', toggle);
+toggle();
+</script>
+{% endblock %}
