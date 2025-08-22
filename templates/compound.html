@@ -14,11 +14,23 @@
             <form method="POST">
                 <div class="space-y-5">
                     <div>
-                        <label for="initial_balance" class="block text-sm font-medium text-gray-400">Initial Balance (€)</label>
+                        <label for="initial_balance" class="flex items-center text-sm font-medium text-gray-400">
+                            Initial Balance (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The starting amount of your investment. Must be a positive number.</span>
+                            </span>
+                        </label>
                         <input type="number" name="initial_balance" id="initial_balance" value="{{ form_data.initial_balance | default(1000) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
-                        <label for="periodic_deposit" class="block text-sm font-medium text-gray-400">Periodic Deposit (€)</label>
+                        <label for="periodic_deposit" class="flex items-center text-sm font-medium text-gray-400">
+                            Periodic Deposit (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The amount you add per period. Must be a positive number.</span>
+                            </span>
+                        </label>
                         <input type="number" name="periodic_deposit" id="periodic_deposit" value="{{ form_data.periodic_deposit | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
@@ -38,11 +50,23 @@
                         </select>
                     </div>
                     <div>
-                        <label for="interest_rate" class="block text-sm font-medium text-gray-400">Annual Interest Rate (%)</label>
+                        <label for="interest_rate" class="flex items-center text-sm font-medium text-gray-400">
+                            Annual Interest Rate (%)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The annual interest rate. For 7%, enter 7.</span>
+                            </span>
+                        </label>
                         <input type="number" name="interest_rate" id="interest_rate" value="{{ form_data.interest_rate | default(7) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
-                        <label for="duration" class="block text-sm font-medium text-gray-400">Duration (Years)</label>
+                        <label for="duration" class="flex items-center text-sm font-medium text-gray-400">
+                            Duration (Years)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The number of years the investment will grow.</span>
+                            </span>
+                        </label>
                         <input type="number" name="duration" id="duration" value="{{ form_data.duration | default(10) }}" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                 </div>
@@ -90,6 +114,21 @@
                     <p class="text-gray-500 mt-2">Fill out the form and click "Calculate" to see your investment projection.</p>
                 </div>
             {% endif %}
+        </div>
+    </div>
+    <div class="mt-8 bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
+        <h2 class="text-2xl font-bold text-white mb-4">How It's Calculated</h2>
+        <p class="text-gray-400">The future value of your investment is calculated using the formula for the future value of a series of payments (annuity):</p>
+        <div class="mt-4 p-4 bg-gray-900/50 rounded-lg text-white font-mono text-sm overflow-x-auto">
+            FV = P(1 + r/n)^(nt) + PMT * [((1 + r/n)^(nt) - 1) / (r/n)]
+        </div>
+        <div class="mt-4 text-gray-400">
+            <p><strong class="text-white">FV:</strong> Future Value of the investment</p>
+            <p><strong class="text-white">P:</strong> Initial principal balance</p>
+            <p><strong class="text-white">r:</strong> Annual interest rate</p>
+            <p><strong class="text-white">n:</strong> Number of times that interest is compounded per year</p>
+            <p><strong class="text-white">t:</strong> Number of years the money is invested for</p>
+            <p><strong class="text-white">PMT:</strong> Periodic payment</p>
         </div>
     </div>
 </div>

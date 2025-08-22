@@ -17,15 +17,33 @@
                 <input type="hidden" name="calculation_type" value="expected_move">
                 <div class="space-y-4">
                     <div>
-                        <label for="stock_price_move" class="block text-sm font-medium text-gray-400">Current Stock Price (€)</label>
+                        <label for="stock_price_move" class="flex items-center text-sm font-medium text-gray-400">
+                            Current Stock Price (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The current market price of the stock. Must be a positive number.</span>
+                            </span>
+                        </label>
                         <input type="number" name="stock_price_move" value="{{ form_data.stock_price_move }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
-                        <label for="call_price_move" class="block text-sm font-medium text-gray-400">ATM Call Option Price (€)</label>
+                        <label for="call_price_move" class="flex items-center text-sm font-medium text-gray-400">
+                            ATM Call Option Price (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The price of the at-the-money call option. Must be a positive number.</span>
+                            </span>
+                        </label>
                         <input type="number" name="call_price_move" value="{{ form_data.call_price_move }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
-                        <label for="put_price_move" class="block text-sm font-medium text-gray-400">ATM Put Option Price (€)</label>
+                        <label for="put_price_move" class="flex items-center text-sm font-medium text-gray-400">
+                            ATM Put Option Price (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The price of the at-the-money put option. Must be a positive number.</span>
+                            </span>
+                        </label>
                         <input type="number" name="put_price_move" value="{{ form_data.put_price_move }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                 </div>
@@ -61,15 +79,33 @@
                 <input type="hidden" name="calculation_type" value="sell_vs_exercise">
                 <div class="space-y-4">
                     <div>
-                        <label for="stock_price_exercise" class="block text-sm font-medium text-gray-400">Current Stock Price (€)</label>
+                        <label for="stock_price_exercise" class="flex items-center text-sm font-medium text-gray-400">
+                            Current Stock Price (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The current market price of the stock. Must be a positive number.</span>
+                            </span>
+                        </label>
                         <input type="number" name="stock_price_exercise" value="{{ form_data.stock_price_exercise }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
-                        <label for="strike_price_exercise" class="block text-sm font-medium text-gray-400">Option Strike Price (€)</label>
+                        <label for="strike_price_exercise" class="flex items-center text-sm font-medium text-gray-400">
+                            Option Strike Price (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The strike price of the option. Must be a positive number.</span>
+                            </span>
+                        </label>
                         <input type="number" name="strike_price_exercise" value="{{ form_data.strike_price_exercise }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
-                        <label for="premium_exercise" class="block text-sm font-medium text-gray-400">Option Premium (€)</label>
+                        <label for="premium_exercise" class="flex items-center text-sm font-medium text-gray-400">
+                            Option Premium (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The current market price (premium) of the option. Must be a positive number.</span>
+                            </span>
+                        </label>
                         <input type="number" name="premium_exercise" value="{{ form_data.premium_exercise }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                 </div>
@@ -105,6 +141,27 @@
                 </div>
                 {% endif %}
             {% endif %}
+        </div>
+    </div>
+    <div class="mt-8 bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
+        <h2 class="text-2xl font-bold text-white mb-4">How It's Calculated</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h3 class="text-xl font-semibold text-white mb-2">Market's Expected Move</h3>
+                <p class="text-gray-400">The expected move is calculated by adding the prices of the at-the-money (ATM) call and put options.</p>
+                <div class="mt-4 p-4 bg-gray-900/50 rounded-lg text-white font-mono text-sm overflow-x-auto">
+                    Expected Move = ATM Call Price + ATM Put Price
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold text-white mb-2">Sell vs. Exercise</h3>
+                <p class="text-gray-400">The profit from selling is the option's premium, while the profit from exercising is its intrinsic value.</p>
+                <div class="mt-4 p-4 bg-gray-900/50 rounded-lg text-white font-mono text-sm overflow-x-auto">
+                    Profit from Selling = Option Premium
+                    <br>
+                    Profit from Exercising = Stock Price - Strike Price
+                </div>
+            </div>
         </div>
     </div>
 </div>

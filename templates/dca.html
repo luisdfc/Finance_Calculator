@@ -14,20 +14,42 @@
             <form method="POST">
                 <div class="space-y-5">
                     <div>
-                        <label for="total_capital" class="block text-sm font-medium text-gray-400">Total Capital (€)</label>
+                        <label for="total_capital" class="flex items-center text-sm font-medium text-gray-400">
+                            Total Capital (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The total amount of money you plan to invest. Must be a positive number.</span>
+                            </span>
+                        </label>
                         <input type="number" name="total_capital" id="total_capital" value="{{ form_data.total_capital | default(1000) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
-                        <label for="share_price" class="block text-sm font-medium text-gray-400">Current Share Price (€)</label>
+                        <label for="share_price" class="flex items-center text-sm font-medium text-gray-400">
+                            Current Share Price (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The current market price of one share. Must be a positive number.</span>
+                            </span>
+                        </label>
                         <input type="number" name="share_price" id="share_price" value="{{ form_data.share_price | default(10) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
-                        <label for="commission_fee" class="block text-sm font-medium text-gray-400">Commission Fee per Trade (€)</label>
+                        <label for="commission_fee" class="flex items-center text-sm font-medium text-gray-400">
+                            Commission Fee per Trade (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The flat fee your broker charges for each trade. Enter 0 if there is no fee.</span>
+                            </span>
+                        </label>
                         <input type="number" name="commission_fee" id="commission_fee" value="{{ form_data.commission_fee | default(5) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
                     <div>
                         <label for="annualized_volatility" class="flex items-center text-sm font-medium text-gray-400">
                             Annualized Volatility
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">A measure of the stock's price swings. For 60%, enter 0.60.</span>
+                            </span>
                         </label>
                         <input type="number" name="annualized_volatility" id="annualized_volatility" value="{{ form_data.annualized_volatility | default(0.60) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
@@ -73,6 +95,18 @@
                     <p class="text-gray-500 mt-2">Fill out the form to calculate your optimal DCA plan.</p>
                 </div>
             {% endif %}
+        </div>
+    </div>
+    <div class="mt-8 bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
+        <h2 class="text-2xl font-bold text-white mb-4">How It's Calculated</h2>
+        <p class="text-gray-400">The optimizer balances two constraints to find the ideal number of trades:</p>
+        <div class="mt-4 text-gray-400">
+            <p><strong class="text-white">1. Commission Cap:</strong> Ensures total commissions don't exceed 5% of your capital.</p>
+            <p><strong class="text-white">2. Trade Viability:</strong> Ensures each trade is large enough to buy at least one share.</p>
+        </div>
+        <p class="text-gray-400 mt-4">The price-drop trigger is then calculated based on the stock's volatility and the optimal number of trades:</p>
+        <div class="mt-4 p-4 bg-gray-900/50 rounded-lg text-white font-mono text-sm overflow-x-auto">
+            Trigger % = Annualized Volatility / sqrt(Optimal Trades)
         </div>
     </div>
 </div>

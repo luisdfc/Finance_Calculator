@@ -1,65 +1,118 @@
-# Financial Calculators for Investors
-This repository contains a collection of Python-based command-line tools designed to help investors make more informed and optimized decisions. Each calculator addresses a specific financial question, from opportunity cost to advanced options strategies.
+# 📊 FinCalc: Web-Based Financial Calculators for Investors
 
-## Calculators
-1. Capital Gains Opportunity Cost Calculator (Capital Gains Opportunity Cost Calculator.py)
-This tool calculates the minimum return a new investment must generate to be more profitable than holding onto your current investment after accounting for capital gains taxes. It helps you answer the question: "Is it worth selling this asset to invest in something else?"
+[![Python](https://img.shields.io/badge/python-3.x-blue.svg)](https://www.python.org/)  
+[![Flask](https://img.shields.io/badge/flask-2.x-green.svg)](https://flask.palletsprojects.com/)  
+[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
-### Inputs Required:
-Current Investment Value: The total current market value of your asset.
+**FinCalc** is a modern, easy-to-use web application that provides a suite of powerful financial calculators.  
+Designed for investors who want to make informed, data-driven decisions, FinCalc simplifies complex financial questions with a clean and intuitive interface.
 
-Original Cost Basis: The price you originally paid for the asset.
+---
 
-Capital Gains Tax Rate: Your applicable tax rate on the profit, entered as a decimal (e.g., 0.19 for 19%).
+## ✨ Features
 
-The script will output the breakeven return percentage required from a new investment to justify selling the current one.
+This application includes four key calculators:
 
-### 2. DCA Strategy Optimizer (DCA Strategy Optimizer.py)
-This script determines your optimal Dollar-Cost Averaging (DCA) strategy by balancing the benefits of averaging your cost basis against the impact of commission fees. It calculates both the ideal number of trades to make and the specific price drop percentage to use as a buying trigger.
+### 1. 📈 Compound Interest Calculator
+Project the future value of your investments and visualize growth with the power of compounding.  
 
-Inputs Required:
-Total Capital: The total amount of money you plan to invest.
+Formula:  
 
-Current Share Price: The current market price of one share.
+\[
+FV = P \times \left(1 + \frac{r}{n}\right)^{n \times t}
+\]
 
-Commission Fee: The flat fee your broker charges for each trade.
+Where:
+- \(FV\): Future Value  
+- \(P\): Principal amount  
+- \(r\): Annual interest rate  
+- \(n\): Compounding periods per year  
+- \(t\): Time in years  
 
-Annualized Volatility: A measure of the stock's price swings over a year. This should be entered as a decimal (e.g., 0.60 for 60%).
+---
 
-The script will output a personalized DCA plan, including the number of purchases to make and the price-drop percentage that should trigger each purchase.
+### 2. 💰 DCA Strategy Optimizer
+Find your optimal **Dollar-Cost Averaging (DCA)** strategy.  
+Balances commission costs against the benefits of averaging into a position.
 
-### 3. Options Strategy Calculator (Options Strategy Calculator.py)
-This tool provides two key calculations for options traders:
+---
 
-Market's Expected Move Calculator: Based on the price of an at-the-money (ATM) straddle, this tool calculates the price swing (up or down) that the market is anticipating for a stock. This is especially useful before an earnings report.
+### 3. 🔄 Capital Gains Opportunity Cost
+Decide if it’s worth selling an asset to reinvest elsewhere by calculating the **breakeven return** required.  
 
-Sell vs. Exercise Calculator: This tool demonstrates the financial difference between selling a call option to close your position versus exercising it to buy the shares, highlighting the importance of extrinsic value.
+\[
+r_{new} \geq \frac{(FV_{current} - Tax)}{P_{new}}
+\]
 
-You will run the script and choose which calculation you want to perform, then provide the required inputs like stock and option prices.
+Where:
+- \(r_{new}\): Required return of the new investment  
+- \(FV_{current}\): Future value if you keep the current asset  
+- \(Tax\): Capital gains tax liability  
+- \(P_{new}\): Amount invested in the new opportunity  
 
-### 4. Compound Interest Calculator (Compound Interest Calculator.py)
-This is an interactive tool for planning your long-term investments. It allows you to explore different financial scenarios based on the principle of compound interest and generates a graph to visualize the growth.
+---
 
-Main Features:
-Calculate Final Balance: Project the future value of your investment.
+### 4. ⚖️ Options Strategy Calculator
 
-Calculate Time Required: Determine how many years it will take to reach a specific savings goal.
+#### a) Market's Expected Move
+Estimate price swings before events (e.g., earnings reports).  
 
-Calculate Required Interest Rate: Find the annual return needed to reach your goal in a set time.
+\[
+\text{Expected Move} \approx \frac{C_{ATM} + P_{ATM}}{S} \times 100
+\]
 
-Calculate Periodic Contribution: Determine the regular deposit amount needed to reach your financial goal.
+Where:
+- \(C_{ATM}\): ATM call price  
+- \(P_{ATM}\): ATM put price  
+- \(S\): Current stock price  
 
-Inputs You May Need:
-Initial Balance (€): The amount of money you start with.
+#### b) Sell vs. Exercise
+Compare outcomes of selling vs. exercising an option.  
 
-Periodic Deposit (€): The amount you plan to add regularly.
+\[
+\text{Option Price} = \text{Intrinsic Value} + \text{Extrinsic Value}
+\]
 
-Deposit Frequency: How often you will make contributions (annually, monthly, etc.).
+---
 
-Deposit Time: Whether the contribution is made at the beginning or end of each period.
+## 🚀 Getting Started
 
-Duration (Years): How many years you will maintain the investment.
+### 1. Prerequisites
+- Python 3.x installed  
 
-Annual Interest Rate (%): The expected annual return on your investment (e.g., 7 for 7%).
+### 2. Installation
+Clone the repository:
 
-Savings Goal (€): The amount of money you want to reach.
+```bash
+git clone <repository-url>
+cd <repository-folder>
+
+```
+Install the required Python packages using pip:
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Running the Application
+Once the dependencies are installed, you can start the Flask web server:
+
+```bash
+python app.py
+```
+The application will be running at:
+
+http://127.0.0.1:5000
+
+Open this URL in your web browser to start using the calculators.
+
+## 🤝 Contributing
+
+Contributions are welcome!
+1. Fork the repo
+2. Create a feature branch (git checkout -b feature-name)
+3. Commit changes (git commit -m "Add feature")
+4. Push and open a Pull Request
+
+## 📜 License
+
+This project is licensed under the MIT License.
