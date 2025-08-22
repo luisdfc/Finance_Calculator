@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Compound Interest Calculator</h2>
+<form method="post">
+    <label>Calculation:
+        <select name="calc_type">
+            <option value="balance">Final Balance</option>
+            <option value="time">Time to Goal</option>
+            <option value="rate">Required Interest Rate</option>
+            <option value="deposit">Required Periodic Deposit</option>
+        </select>
+    </label><br>
+    <label>Initial Balance: <input type="number" step="any" name="principal"></label><br>
+    <label>Periodic Deposit: <input type="number" step="any" name="deposit"></label><br>
+    <label>Deposits per Year: <input type="number" name="frequency" value="12"></label><br>
+    <label>Deposit at Beginning? <input type="checkbox" name="begin"></label><br>
+    <label>Annual Interest Rate (%): <input type="number" step="any" name="rate"></label><br>
+    <label>Years: <input type="number" step="any" name="years"></label><br>
+    <label>Goal Amount: <input type="number" step="any" name="goal"></label><br>
+    <button type="submit">Compute</button>
+</form>
+{% if result %}
+    {% if result.error %}
+        <p class="error">{{ result.error }}</p>
+    {% elif result.type == 'balance' %}
+        <p>Final Balance: {{ result.balance|round(2) }}</p>
+        {% if result.image %}<img src="data:image/png;base64,{{ result.image }}" alt="Growth graph">{% endif %}
+    {% elif result.type == 'time' %}
+        <p>Years Needed: {{ result.years }}</p>
+    {% elif result.type == 'rate' %}
+        <p>Required Interest Rate: {{ result.rate|round(2) }}%</p>
+    {% elif result.type == 'deposit' %}
+        <p>Required Deposit: {{ result.deposit|round(2) }}</p>
+    {% endif %}
+{% endif %}
+{% endblock %}

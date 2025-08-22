@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Capital Gains Opportunity Cost Calculator</h2>
+<form method="post">
+    <label>Current Investment Value: <input type="number" step="any" name="current_value" required></label><br>
+    <label>Original Cost Basis: <input type="number" step="any" name="cost_basis" required></label><br>
+    <label>Capital Gains Tax Rate (decimal): <input type="number" step="any" name="tax_rate" required></label><br>
+    <button type="submit">Calculate</button>
+</form>
+{% if result %}
+    {% if result.error %}
+        <p class="error">{{ result.error }}</p>
+    {% else %}
+        <p>Capital Gain: {{ result.capital_gain|round(2) }}</p>
+        <p>Tax Cost: {{ result.tax_cost|round(2) }}</p>
+        <p>Post-Tax Proceeds: {{ result.post_tax_proceeds|round(2) }}</p>
+        <p><strong>Required Return: {{ (result.required_return*100)|round(2) }}%</strong></p>
+    {% endif %}
+{% endif %}
+{% endblock %}
