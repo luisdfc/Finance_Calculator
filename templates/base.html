@@ -1,23 +1,100 @@
-<!doctype html>
-<html lang="en">
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en" class="dark">
 <head>
-    <meta charset="utf-8">
-    <title>Finance Calculators</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Financial Calculators{% endblock %}</title>
+    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
+    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap)" rel="stylesheet">
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        nav a { margin-right: 15px; }
-        .error { color: red; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 135%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .glowing-border {
+            border: 1px solid transparent;
+            background: linear-gradient(to bottom, #111827, #000000) padding-box,
+                        linear-gradient(to bottom, #374151, #1f2937) border-box;
+        }
+        .glowing-border:hover {
+             box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
+        }
     </style>
 </head>
-<body>
-<nav>
-    <a href="/">Home</a>
-    <a href="/capital-gains">Capital Gains</a>
-    <a href="/dca">DCA Optimizer</a>
-    <a href="/options">Options Strategy</a>
-    <a href="/compound">Compound Interest</a>
-</nav>
-<hr>
-{% block content %}{% endblock %}
+<body class="bg-black font-sans text-gray-300">
+    <div class="absolute top-0 left-0 w-full h-full bg-black bg-opacity-60 z-[-1]" 
+         style="background-image: radial-gradient(circle at top left, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0) 30%);">
+    </div>
+
+    <header class="bg-black/50 backdrop-blur-lg border-b border-gray-800/50 sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-white flex items-center gap-2">
+                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                FinCalc
+            </a>
+            <div class="hidden md:flex items-center space-x-6 text-sm font-medium text-gray-400">
+                <a href="/compound" class="hover:text-white transition-colors">Compound Interest</a>
+                <a href="/dca" class="hover:text-white transition-colors">DCA Optimizer</a>
+                <a href="/capital_gains" class="hover:text-white transition-colors">Capital Gains</a>
+                <a href="/options" class="hover:text-white transition-colors">Options</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-16">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="mt-16 border-t border-gray-800/50">
+        <div class="container mx-auto px-6 py-6 text-center text-gray-500 text-sm">
+            <p>&copy; 2024 Financial Calculators. All Rights Reserved.</p>
+        </div>
+    </footer>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

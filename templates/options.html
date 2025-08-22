@@ -1,48 +1,113 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}Options Strategy Calculator{% endblock %}
+
 {% block content %}
-<h2>Options Strategy Calculator</h2>
-<form method="post">
-    <label>Select Calculation:
-        <select name="calc_type">
-            <option value="move">Market Expected Move</option>
-            <option value="sell">Sell vs Exercise</option>
-        </select>
-    </label><br>
-    <div id="move-fields">
-        <label>Stock Price: <input type="number" step="any" name="stock_price"></label><br>
-        <label>ATM Call Price: <input type="number" step="any" name="call_price"></label><br>
-        <label>ATM Put Price: <input type="number" step="any" name="put_price"></label><br>
+<div class="max-w-6xl mx-auto">
+    <div class="text-center mb-12 fade-in">
+        <h1 class="text-4xl font-bold text-white">Options Strategy Calculator</h1>
+        <p class="text-gray-400 mt-2">Analyze trades with our options calculation tools.</p>
     </div>
-    <div id="sell-fields">
-        <label>Stock Price: <input type="number" step="any" name="stock_price_sell"></label><br>
-        <label>Strike Price: <input type="number" step="any" name="strike_price"></label><br>
-        <label>Option Premium: <input type="number" step="any" name="option_premium"></label><br>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Expected Move Calculator -->
+        <div class="bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl fade-in">
+            <h2 class="text-2xl font-bold text-white mb-2">Market's Expected Move</h2>
+            <p class="text-gray-500 mb-6">Calculate the price swing the market expects, based on ATM straddle prices. Ideal for pre-earnings analysis.</p>
+            <form method="POST">
+                <input type="hidden" name="calculation_type" value="expected_move">
+                <div class="space-y-4">
+                    <div>
+                        <label for="stock_price_move" class="block text-sm font-medium text-gray-400">Current Stock Price (€)</label>
+                        <input type="number" name="stock_price_move" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="call_price_move" class="block text-sm font-medium text-gray-400">ATM Call Option Price (€)</label>
+                        <input type="number" name="call_price_move" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="put_price_move" class="block text-sm font-medium text-gray-400">ATM Put Option Price (€)</label>
+                        <input type="number" name="put_price_move" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                </div>
+                <button type="submit" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">Calculate Move</button>
+            </form>
+             {% if result and result.type == 'expected_move' %}
+                {% if result.error %}
+                     <div class="mt-6 bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg" role="alert">
+                        <p class="font-bold">Error</p><p>{{ result.error }}</p>
+                    </div>
+                {% else %}
+                <div class="mt-6 bg-black/30 border border-gray-800/50 p-6 rounded-lg">
+                    <h3 class="font-semibold text-white mb-4">Expected Move Analysis</h3>
+                    <div class="text-center">
+                        <p class="text-gray-400">Expected Move (up or down):</p>
+                        <p class="text-3xl font-bold text-indigo-400 my-1">€{{ "{:,.2f}".format(result.expected_move) }}</p>
+                        <p class="text-gray-500 text-sm">({{ "{:.2%}".format(result.expected_percentage) }})</p>
+                    </div>
+                    <hr class="my-4 border-gray-700/50">
+                    <div class="text-sm text-center text-gray-400">
+                        <p>Implied Trading Range:</p>
+                        <p class="font-medium text-gray-200">€{{ "{:,.2f}".format(result.lower_bound) }} – €{{ "{:,.2f}".format(result.upper_bound) }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Sell vs Exercise Calculator -->
+        <div class="bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl fade-in" style="animation-delay: 0.1s;">
+            <h2 class="text-2xl font-bold text-white mb-2">Sell vs. Exercise</h2>
+            <p class="text-gray-500 mb-6">Compare the profit from selling an option versus exercising it to see why selling is almost always better.</p>
+            <form method="POST">
+                <input type="hidden" name="calculation_type" value="sell_vs_exercise">
+                <div class="space-y-4">
+                    <div>
+                        <label for="stock_price_exercise" class="block text-sm font-medium text-gray-400">Current Stock Price (€)</label>
+                        <input type="number" name="stock_price_exercise" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="strike_price_exercise" class="block text-sm font-medium text-gray-400">Option Strike Price (€)</label>
+                        <input type="number" name="strike_price_exercise" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="premium_exercise" class="block text-sm font-medium text-gray-400">Option Premium (€)</label>
+                        <input type="number" name="premium_exercise" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                </div>
+                <button type="submit" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">Compare Profits</button>
+            </form>
+             {% if result and result.type == 'sell_vs_exercise' %}
+                 {% if result.error %}
+                     <div class="mt-6 bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg" role="alert">
+                        <p class="font-bold">Error</p><p>{{ result.error }}</p>
+                    </div>
+                 {% elif result.note %}
+                     <div class="mt-6 bg-blue-900/50 border border-blue-500/30 text-blue-300 p-4 rounded-lg" role="alert">
+                        <p class="font-bold">Note</p><p>{{ result.note }}</p>
+                    </div>
+                {% else %}
+                <div class="mt-6 bg-black/30 border border-gray-800/50 p-6 rounded-lg">
+                    <h3 class="font-semibold text-white mb-4">Profit Comparison (per share)</h3>
+                     <div class="space-y-3">
+                        <div class="flex justify-between items-baseline">
+                            <p class="text-gray-400">Profit from Selling:</p>
+                            <p class="text-lg font-bold text-green-400">€{{ "{:,.2f}".format(result.profit_from_selling) }}</p>
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <p class="text-gray-400">Profit from Exercising:</p>
+                            <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(result.profit_from_exercising) }}</p>
+                        </div>
+                    </div>
+                    <hr class="my-4 border-gray-700/50">
+                    <div class="text-center">
+                        <p class="text-gray-400">Extra profit by selling:</p>
+                        <p class="text-2xl font-bold text-indigo-400">€{{ "{:,.2f}".format(result.extrinsic_value) }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
     </div>
-    <button type="submit">Calculate</button>
-</form>
-{% if result %}
-    {% if result.error %}
-        <p class="error">{{ result.error }}</p>
-    {% elif result.type == 'move' %}
-        <p>Expected Move: {{ result.expected_move|round(2) }}</p>
-        <p>Expected Move %: {{ (result.expected_percentage*100)|round(2) }}%</p>
-        <p>Range: {{ result.lower_bound|round(2) }} - {{ result.upper_bound|round(2) }}</p>
-    {% else %}
-        <p>Profit from Selling: {{ result.profit_from_selling|round(2) }}</p>
-        <p>Profit from Exercising: {{ result.profit_from_exercising|round(2) }}</p>
-        <p>Extrinsic Value: {{ result.extrinsic_value|round(2) }}</p>
-    {% endif %}
-{% endif %}
-<script>
-// simple show/hide fields based on selection
-const select = document.querySelector('select[name="calc_type"]');
-const moveFields = document.getElementById('move-fields');
-const sellFields = document.getElementById('sell-fields');
-function toggle(){
- if(select.value === 'move'){ moveFields.style.display='block'; sellFields.style.display='none'; }
- else { moveFields.style.display='none'; sellFields.style.display='block'; }
-}
-select.addEventListener('change', toggle);
-toggle();
-</script>
+</div>
 {% endblock %}

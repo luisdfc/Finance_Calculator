@@ -1,20 +1,85 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}DCA Strategy Optimizer{% endblock %}
+
 {% block content %}
-<h2>DCA Strategy Optimizer</h2>
-<form method="post">
-    <label>Total Capital: <input type="number" step="any" name="capital" required></label><br>
-    <label>Current Share Price: <input type="number" step="any" name="price" required></label><br>
-    <label>Commission Fee: <input type="number" step="any" name="fee" required></label><br>
-    <label>Annualized Volatility (decimal): <input type="number" step="any" name="volatility" required></label><br>
-    <button type="submit">Optimize</button>
-</form>
-{% if result %}
-    {% if result.error %}
-        <p class="error">{{ result.error }}</p>
-    {% else %}
-        <p>Optimal Trades: {{ result.optimal_trades }}</p>
-        <p>Price-Drop Trigger: {{ (result.trigger_percentage*100)|round(2) }}%</p>
-        <p>Capital per Trade: {{ result.capital_per_trade|round(2) }}</p>
-    {% endif %}
-{% endif %}
+<div class="max-w-5xl mx-auto">
+    <div class="text-center mb-12 fade-in">
+        <h1 class="text-4xl font-bold text-white">DCA Strategy Optimizer</h1>
+        <p class="text-gray-400 mt-2">Find the optimal Dollar-Cost Averaging strategy for your investment.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <!-- Form Section -->
+        <div class="lg:col-span-2 bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl fade-in">
+            <form method="POST">
+                <div class="space-y-5">
+                    <div>
+                        <label for="total_capital" class="block text-sm font-medium text-gray-400">Total Capital (€)</label>
+                        <input type="number" name="total_capital" id="total_capital" value="1000" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="share_price" class="block text-sm font-medium text-gray-400">Current Share Price (€)</label>
+                        <input type="number" name="share_price" id="share_price" value="10" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="commission_fee" class="block text-sm font-medium text-gray-400">Commission Fee per Trade (€)</label>
+                        <input type="number" name="commission_fee" id="commission_fee" value="5" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="annualized_volatility" class="flex items-center text-sm font-medium text-gray-400">
+                            Annualized Volatility
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">Enter as a decimal (e.g., 0.60 for 60%). This measures the stock's price swings. Find it on financial data websites like Yahoo Finance.</span>
+                            </span>
+                        </label>
+                        <input type="number" name="annualized_volatility" id="annualized_volatility" value="0.60" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                </div>
+                <button type="submit" class="mt-8 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">Optimize Strategy</button>
+            </form>
+        </div>
+
+        <!-- Result Section -->
+        <div class="lg:col-span-3 fade-in" style="animation-delay: 0.2s;">
+            {% if result %}
+                {% if result.error %}
+                    <div class="bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg" role="alert">
+                        <p class="font-bold">Error</p>
+                        <p>{{ result.error }}</p>
+                    </div>
+                {% else %}
+                    <div class="bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl">
+                        <h2 class="text-2xl font-bold text-white mb-6">Your Optimized DCA Strategy</h2>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Optimal Number of Trades:</p>
+                                <p class="text-2xl font-bold text-indigo-400">{{ result.optimal_trades }}</p>
+                            </div>
+                             <hr class="border-gray-700/50">
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Ideal Price-Drop Trigger:</p>
+                                <p class="text-2xl font-bold text-indigo-400">{{ "{:.2%}".format(result.trigger_percentage) }}</p>
+                            </div>
+                        </div>
+                        <div class="mt-8 bg-black/30 border border-gray-800/50 p-6 rounded-lg">
+                            <h3 class="font-semibold text-white mb-3">How to Implement This Strategy</h3>
+                            <ol class="list-decimal list-inside text-gray-400 space-y-2">
+                                <li>Divide your capital into <strong class="text-gray-200">{{ result.optimal_trades }} parts</strong> of <strong class="text-gray-200">€{{ "{:,.2f}".format(result.capital_per_trade) }}</strong> each.</li>
+                                <li>Make your first purchase now at the current price.</li>
+                                <li>For subsequent purchases, buy every time the stock drops by <strong class="text-gray-200">{{ "{:.2%}".format(result.trigger_percentage) }}</strong> from your last purchase price.</li>
+                            </ol>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="bg-gray-900/50 border border-gray-800/50 p-8 rounded-2xl text-center h-full flex flex-col justify-center">
+                    <h3 class="text-xl font-semibold text-white">Your strategy will appear here</h3>
+                    <p class="text-gray-500 mt-2">Fill out the form to calculate your optimal DCA plan.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}
