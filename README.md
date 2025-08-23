@@ -16,19 +16,6 @@ This application includes four key calculators:
 ### 1. 📈 Compound Interest Calculator
 Project the future value of your investments and visualize growth with the power of compounding.  
 
-Formula:  
-
-\[
-FV = P \times \left(1 + \frac{r}{n}\right)^{n \times t}
-\]
-
-Where:
-- \(FV\): Future Value  
-- \(P\): Principal amount  
-- \(r\): Annual interest rate  
-- \(n\): Compounding periods per year  
-- \(t\): Time in years  
-
 ---
 
 ### 2. 💰 DCA Strategy Optimizer
@@ -40,38 +27,15 @@ Balances commission costs against the benefits of averaging into a position.
 ### 3. 🔄 Capital Gains Opportunity Cost
 Decide if it’s worth selling an asset to reinvest elsewhere by calculating the **breakeven return** required.  
 
-\[
-r_{new} \geq \frac{(FV_{current} - Tax)}{P_{new}}
-\]
-
-Where:
-- \(r_{new}\): Required return of the new investment  
-- \(FV_{current}\): Future value if you keep the current asset  
-- \(Tax\): Capital gains tax liability  
-- \(P_{new}\): Amount invested in the new opportunity  
-
 ---
 
 ### 4. ⚖️ Options Strategy Calculator
 
 #### a) Market's Expected Move
-Estimate price swings before events (e.g., earnings reports).  
-
-\[
-\text{Expected Move} \approx \frac{C_{ATM} + P_{ATM}}{S} \times 100
-\]
-
-Where:
-- \(C_{ATM}\): ATM call price  
-- \(P_{ATM}\): ATM put price  
-- \(S\): Current stock price  
+Estimate price swings before events (e.g., earnings reports).    
 
 #### b) Sell vs. Exercise
 Compare outcomes of selling vs. exercising an option.  
-
-\[
-\text{Option Price} = \text{Intrinsic Value} + \text{Extrinsic Value}
-\]
 
 ---
 
