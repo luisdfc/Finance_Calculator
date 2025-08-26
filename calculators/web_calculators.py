@@ -113,10 +113,6 @@ class CompoundInterestWebCalculator(WebCalculator):
             if interest_rate is not None and interest_rate < 0: errors.append("Annual Interest Rate cannot be negative.")
             if target_balance is not None and target_balance <= 0: errors.append("Target Balance must be a positive number.")
             if frequency is not None and frequency <= 0: errors.append("Deposit Frequency must be at least once a year.")
-            # Ensure at least one growth factor is present if initial balance < target
-            if initial_balance is not None and target_balance is not None and initial_balance < target_balance:
-                if (periodic_deposit == 0 or periodic_deposit is None) and (interest_rate == 0 or interest_rate is None):
-                     errors.append("To reach a target balance, you need either periodic deposits or an interest rate (or both).")
 
         elif calculation_type == 'periodic_deposit':
             if None in [initial_balance, frequency, interest_rate, duration, target_balance]:
@@ -150,7 +146,20 @@ class CompoundInterestWebCalculator(WebCalculator):
 
         if errors:
             return None, form_data, {"error": " ".join(errors)}
-            
+
+        # Convert all processed data to float for consistency in rendering if they are Decimal
+        # This prevents ValueError when rendering form_data in the template after calculation
+        for key, value in processed_data.items():
+            if isinstance(value, Decimal):
+                form_data[key] = float(value)
+            elif key == 'deposit_timing': # Convert boolean back to string for rendering in select
+                form_data[key] = 'start' if value else 'end'
+            elif key == 'frequency': # Convert int back to string for rendering in select
+                form_data[key] = str(value)
+            # For `None` values, ensure they remain `None` or an empty string for template
+            elif value is None:
+                form_data[key] = '' # Ensure empty string for input fields
+
         return processed_data, form_data, None
 
     def calculate(self, processed_data):

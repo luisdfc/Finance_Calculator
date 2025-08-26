@@ -26,7 +26,7 @@
 
                     <div id="field_initial_balance">
                         <label for="initial_balance" class="flex items-center text-sm font-medium text-gray-400">
-                            Initial Balance (€)
+                            <span class="label-text">Initial Balance (€)</span>
                             <span class="tooltip ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
                                 <span class="tooltiptext">The starting amount of your investment.</span>
@@ -36,7 +36,7 @@
                     </div>
                     <div>
                         <label for="periodic_deposit" class="flex items-center text-sm font-medium text-gray-400">
-                            Periodic Deposit (€)
+                            <span class="label-text">Periodic Deposit (€)</span>
                             <span class="tooltip ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
                                 <span class="tooltiptext">The amount you add per period.</span>
@@ -60,9 +60,9 @@
                             <option value="end" {% if form_data.deposit_timing == 'end' %}selected{% endif %}>End of Period</option>
                         </select>
                     </div>
-                    <div>
+                    <div id="field_interest_rate">
                         <label for="interest_rate" class="flex items-center text-sm font-medium text-gray-400">
-                            Annual Interest Rate (%)
+                            <span class="label-text">Annual Interest Rate (%)</span>
                             <span class="tooltip ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
                                 <span class="tooltiptext">The annual interest rate. For 7%, enter 7.</span>
@@ -70,9 +70,9 @@
                         </label>
                         <input type="number" name="interest_rate" id="interest_rate" value="{{ form_data.interest_rate | default(7) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
-                    <div>
+                    <div id="field_duration">
                         <label for="duration" class="flex items-center text-sm font-medium text-gray-400">
-                            Duration (Years)
+                            <span class="label-text">Duration (Years)</span>
                             <span class="tooltip ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
                                 <span class="tooltiptext">The number of years the investment will grow.</span>
@@ -82,7 +82,7 @@
                     </div>
                      <div id="field_target_balance">
                         <label for="target_balance" class="flex items-center text-sm font-medium text-gray-400">
-                            Target Balance (€)
+                            <span class="label-text">Target Balance (€)</span>
                             <span class="tooltip ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
                                 <span class="tooltiptext">The desired final amount you wish to reach.</span>
@@ -275,13 +275,13 @@
             // Reset all fields to default state (enabled and required with original labels/tooltips)
             for (const key in fieldMap) {
                 const { input, labelText, tooltipText } = fieldMap[key];
-                const labelElement = input.previousElementSibling.querySelector('span:first-child');
+                const labelTextElement = input.previousElementSibling.querySelector('.label-text'); // Get the span with class 'label-text'
                 const tooltipElement = input.previousElementSibling.querySelector('.tooltiptext');
                 
                 input.disabled = false;
                 input.required = true;
                 input.classList.remove('opacity-50', 'bg-gray-700');
-                if (labelElement) labelElement.textContent = labelText;
+                if (labelTextElement) labelTextElement.textContent = labelText;
                 if (tooltipElement) tooltipElement.textContent = tooltipText;
 
                 // Make target_balance field visible/hidden as needed
@@ -306,25 +306,25 @@
                 durationInput.required = false;
                 durationInput.value = ''; // Clear value for the calculated field
                 durationInput.classList.add('opacity-50', 'bg-gray-700');
-                durationInput.previousElementSibling.querySelector('span:first-child').textContent = 'Duration (Calculated)';
+                durationInput.previousElementSibling.querySelector('.label-text').textContent = 'Duration (Calculated)';
             } else if (selectedType === 'periodic_deposit') {
                 periodicDepositInput.disabled = true;
                 periodicDepositInput.required = false;
                 periodicDepositInput.value = '';
                 periodicDepositInput.classList.add('opacity-50', 'bg-gray-700');
-                periodicDepositInput.previousElementSibling.querySelector('span:first-child').textContent = 'Periodic Deposit (Calculated)';
+                periodicDepositInput.previousElementSibling.querySelector('.label-text').textContent = 'Periodic Deposit (Calculated)';
             } else if (selectedType === 'interest_rate') {
                 interestRateInput.disabled = true;
                 interestRateInput.required = false;
                 interestRateInput.value = '';
                 interestRateInput.classList.add('opacity-50', 'bg-gray-700');
-                interestRateInput.previousElementSibling.querySelector('span:first-child').textContent = 'Annual Interest Rate (Calculated)';
+                interestRateInput.previousElementSibling.querySelector('.label-text').textContent = 'Annual Interest Rate (Calculated)';
             } else if (selectedType === 'initial_balance') {
                 initialBalanceInput.disabled = true;
                 initialBalanceInput.required = false;
                 initialBalanceInput.value = '';
                 initialBalanceInput.classList.add('opacity-50', 'bg-gray-700');
-                initialBalanceInput.previousElementSibling.querySelector('span:first-child').textContent = 'Initial Balance (Calculated)';
+                initialBalanceInput.previousElementSibling.querySelector('.label-text').textContent = 'Initial Balance (Calculated)';
             }
         }
 

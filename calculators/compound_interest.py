@@ -19,7 +19,7 @@ def calculate_future_value(principal, annual_rate, years, periods_per_year, peri
 
     if periods_per_year_dec == 0:
         # Simple sum if no compounding periods
-        return principal + (periodic_deposit * years_dec * periods_per_year_dec) # Should be 0 if periods_per_year_dec is 0
+        return principal + (periodic_deposit * years_dec * periods_per_year_dec)
 
     rate_per_period = (annual_rate / Decimal('100')) / periods_per_year_dec
     num_periods = years_dec * periods_per_year_dec
@@ -46,16 +46,12 @@ def _generate_compound_history(principal, annual_rate, years, periods_per_year, 
     history = []
     
     # Initialize values for the first year (year 0)
-    current_principal_component = principal
-    current_total_deposits_component = Decimal('0')
-    current_interest_earned_component = Decimal('0')
-    
     history.append({
         'year': 0,
         'balance': principal,
-        'principal_component': current_principal_component,
-        'total_deposits_component': current_total_deposits_component,
-        'interest_earned_component': current_interest_earned_component
+        'principal_component': principal,
+        'total_deposits_component': Decimal('0'),
+        'interest_earned_component': Decimal('0')
     })
 
     for year in range(1, int(years) + 1):
@@ -63,7 +59,7 @@ def _generate_compound_history(principal, annual_rate, years, periods_per_year, 
         balance = calculate_future_value(principal, annual_rate, Decimal(year), periods_per_year, periodic_deposit, deposit_at_beginning)
         
         # Total deposits made over time
-        total_deposits_component_current_year = periodic_deposit * Decimal(periods_per_year) * Decimal(year)
+        total_deposits_component_current_year = periodic_deposit * periods_per_year * year
 
         # Interest is the total balance minus initial principal and total deposits
         interest_earned_component_current_year = balance - principal - total_deposits_component_current_year
@@ -146,18 +142,17 @@ def calculate_time_to_reach_goal(principal, annual_rate, periodic_deposit, perio
 
     if principal < 0 or periodic_deposit < 0 or annual_rate < 0 or periods_per_year <= 0 or goal_balance <= 0:
         return {"error": "All numeric inputs must be positive or zero (except for frequency, which must be positive). Goal balance must be positive."}
-    if goal_balance <= principal and periodic_deposit == 0:
-        return {"note": "Your initial balance already meets or exceeds your goal, or you have no deposits to grow it."}
+    
+    # Edge case: If goal is already met or impossible without interest/deposits
+    fv_at_zero_rate_deposits = calculate_future_value(principal, Decimal('0'), Decimal('1'), periods_per_year, periodic_deposit, deposit_at_beginning)
+    if principal >= goal_balance and fv_at_zero_rate_deposits >= goal_balance:
+        return {"note": "Your initial balance already meets or exceeds your goal. No time is needed."}
+        
+    if annual_rate == 0 and periodic_deposit == 0:
+        return {"error": "With zero interest and zero periodic deposits, goal is unreachable without more capital."}
 
     low_years = Decimal('0')
     high_years = Decimal('200') # Max 200 years to prevent infinite loop
-
-    # Check if goal is reachable at all with initial capital and no deposits/interest if applicable
-    if annual_rate == 0 and periodic_deposit == 0:
-        if principal >= goal_balance:
-            return {"years": low_years, "calculated_field": "years", "chart_data": None} # Goal already met
-        else:
-            return {"error": "With zero interest and zero periodic deposits, goal is unreachable without more capital."}
 
     # Binary search for years
     for _ in range(100): # 100 iterations for precision
@@ -245,16 +240,17 @@ def calculate_periodic_deposit_needed(principal, annual_rate, years, periods_per
         if deposit_at_beginning:
             denominator *= (Decimal('1') + rate_per_period)
         
-        if denominator == 0: # Should not happen if rate_per_period > 0 and num_periods > 0
-            return {"error": "Cannot calculate required periodic deposit due to mathematical impossibility (denominator is zero)."}
+        if denominator <= 0:
+            return {"error": "Cannot calculate required periodic deposit due to a mathematical impossibility. This can occur with a 0% or negative interest rate and an initial balance less than the goal."}
         
         required_deposit = required_fv_from_deposits / denominator
     else: # rate_per_period == 0
+        if num_periods <= 0:
+            return {"error": "Cannot calculate required periodic deposit because the duration is too short or the frequency is invalid."}
         required_deposit = required_fv_from_deposits / num_periods
     
     if required_deposit < 0:
-        # This can happen if goal_balance is less than fv_principal_only, 
-        # but was not caught by the fv_principal_only >= goal_balance check due to precision
+        # This can happen if goal_balance is less than fv_principal_only, but was not caught by the fv_principal_only >= goal_balance check due to precision
         return {"note": f"Your initial principal already grows to €{fv_principal_only:,.2f}, which exceeds your goal of €{goal_balance:,.2f}. No periodic deposit is needed."}
         
     # Generate history for the chart based on the calculated periodic deposit
@@ -312,6 +308,8 @@ def calculate_interest_rate_needed(principal, years, periods_per_year, periodic_
     fv_at_zero_rate = calculate_future_value(principal, Decimal('0'), years_dec, periods_per_year_dec, periodic_deposit, deposit_at_beginning)
     if fv_at_zero_rate >= goal_balance:
         return {"note": f"Your investment reaches €{fv_at_zero_rate:,.2f} with 0% interest, already meeting or exceeding your goal of €{goal_balance:,.2f}. Required interest rate is 0.00%."}
+    if fv_at_zero_rate < goal_balance and principal == 0 and periodic_deposit == 0:
+        return {"error": "With zero initial balance and zero periodic deposits, a positive interest rate alone cannot grow the investment."}
 
     low_rate = Decimal('0')
     high_rate = Decimal('1000') # Search up to 1000% annual rate
@@ -406,7 +404,7 @@ def calculate_initial_balance_needed(annual_rate, years, periods_per_year, perio
     # Calculate required initial principal (P)
     # FV_principal = P * (1 + r/n)^nt  => P = FV_principal / (1 + r/n)^nt
     compound_factor = (Decimal('1') + rate_per_period) ** num_periods
-    if compound_factor == 0: # Should not happen with positive rate/periods
+    if compound_factor == 0:
          return {"error": "Cannot calculate required initial balance due to mathematical impossibility (compound factor is zero)."}
          
     required_principal = required_fv_from_principal / compound_factor
