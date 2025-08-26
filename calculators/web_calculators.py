@@ -1,6 +1,5 @@
-# calculators/web_calculators.py (Updated for Compound Interest multi-goal)
-
-from decimal import Decimal, InvalidOperation # Import Decimal and InvalidOperation
+# calculators/web_calculators.py
+from decimal import Decimal, InvalidOperation
 from . import capital_gains, compound_interest, dca_optimizer, options_strategy
 
 class WebCalculator:
@@ -11,8 +10,7 @@ class WebCalculator:
     def _safe_decimal_conversion(self, value, default_value=None):
         """Safely converts a string value to Decimal, handling potential errors."""
         try:
-            # Attempt to strip spaces and replace comma with dot for European number format
-            if value is None or value == '': # Handle empty strings for optional fields
+            if value is None or value == '':
                 return default_value
             if isinstance(value, str):
                 value = value.strip().replace(',', '.')
@@ -23,11 +21,28 @@ class WebCalculator:
     def _safe_int_conversion(self, value, default_value=None):
         """Safely converts a string value to int, handling potential errors."""
         try:
-            if value is None or value == '': # Handle empty strings for optional fields
+            if value is None or value == '':
                 return default_value
             return int(value)
         except (ValueError, TypeError):
             return default_value
+
+    def _process_simple_form(self, form, field_definitions):
+        """
+        Generic processor for simple forms where all fields are required decimals.
+        `field_definitions` is a list of field names.
+        """
+        form_data = form.to_dict()
+        processed_data = {}
+        try:
+            for field in field_definitions:
+                value = self._safe_decimal_conversion(form_data.get(field))
+                if value is None:
+                    return None, form_data, {"error": "All fields must be filled with valid numbers."}
+                processed_data[field] = value
+            return processed_data, form_data, None
+        except Exception:
+            return None, form_data, {"error": "Invalid input. Please ensure all fields are filled correctly."}
 
     def get_default_form_data(self):
         """Returns default values for the form fields."""
@@ -52,102 +67,71 @@ class CompoundInterestWebCalculator(WebCalculator):
 
     def get_default_form_data(self):
         return {
-            'calculation_type': 'final_balance', # Default calculation
+            'calculation_type': 'final_balance',
             'initial_balance': 1000,
             'periodic_deposit': 100,
-            'frequency': '12', # Default to Monthly
+            'frequency': '12',
             'deposit_timing': 'start',
             'interest_rate': 7,
             'duration': 10,
-            'target_balance': None # For when final balance is an input
+            'target_balance': 20000
         }
+
+    def _validate_compound_interest_inputs(self, data):
+        """Performs validation based on the calculation type."""
+        errors = []
+        calc_type = data['calculation_type']
+        
+        required_fields = {
+            'final_balance': ['initial_balance', 'periodic_deposit', 'frequency', 'interest_rate', 'duration'],
+            'years': ['initial_balance', 'periodic_deposit', 'frequency', 'interest_rate', 'target_balance'],
+            'periodic_deposit': ['initial_balance', 'frequency', 'interest_rate', 'duration', 'target_balance'],
+            'interest_rate': ['initial_balance', 'periodic_deposit', 'frequency', 'duration', 'target_balance'],
+            'initial_balance': ['periodic_deposit', 'frequency', 'interest_rate', 'duration', 'target_balance']
+        }
+
+        if calc_type in required_fields:
+            for field in required_fields[calc_type]:
+                if data.get(field) is None:
+                    errors.append(f"A valid number for {field.replace('_', ' ').title()} is required.")
+            if errors: return errors # Return early if required fields are missing
+
+        # Specific value validations
+        if data.get('initial_balance') is not None and data['initial_balance'] < 0: errors.append("Initial Balance cannot be negative.")
+        if data.get('periodic_deposit') is not None and data['periodic_deposit'] < 0: errors.append("Periodic Deposit cannot be negative.")
+        if data.get('interest_rate') is not None and data['interest_rate'] < 0: errors.append("Annual Interest Rate cannot be negative.")
+        if data.get('duration') is not None and data['duration'] <= 0: errors.append("Duration (Years) must be a positive integer.")
+        if data.get('frequency') is not None and data['frequency'] <= 0: errors.append("Deposit Frequency must be at least once a year.")
+        if data.get('target_balance') is not None and data['target_balance'] <= 0: errors.append("Target Balance must be a positive number.")
+
+        if calc_type == 'years' and data['initial_balance'] is not None and data['target_balance'] is not None and data['initial_balance'] < data['target_balance']:
+            if (data.get('periodic_deposit') == 0 or data.get('periodic_deposit') is None) and (data.get('interest_rate') == 0 or data.get('interest_rate') is None):
+                errors.append("To reach a target balance, you need either periodic deposits or an interest rate (or both).")
+        
+        return errors
 
     def process_form_data(self, form):
         form_data = form.to_dict()
         calculation_type = form_data.get('calculation_type', 'final_balance')
         
-        # All fields are treated as potentially empty based on calculation_type
-        initial_balance_raw = form_data.get('initial_balance')
-        periodic_deposit_raw = form_data.get('periodic_deposit')
-        frequency_raw = form_data.get('frequency')
-        interest_rate_raw = form_data.get('interest_rate')
-        duration_raw = form_data.get('duration')
-        target_balance_raw = form_data.get('target_balance')
-
-        # Convert all to Decimal or int, allowing None for the field to be calculated
-        initial_balance = self._safe_decimal_conversion(initial_balance_raw)
-        periodic_deposit = self._safe_decimal_conversion(periodic_deposit_raw)
-        frequency = self._safe_int_conversion(frequency_raw)
-        deposit_timing = form_data.get('deposit_timing') == 'start'
-        interest_rate = self._safe_decimal_conversion(interest_rate_raw)
-        duration = self._safe_int_conversion(duration_raw)
-        target_balance = self._safe_decimal_conversion(target_balance_raw)
-
-        processed_data = {
-            'calculation_type': calculation_type,
-            'initial_balance': initial_balance,
-            'periodic_deposit': periodic_deposit,
-            'frequency': frequency,
-            'deposit_timing': deposit_timing,
-            'interest_rate': interest_rate,
-            'duration': duration,
-            'target_balance': target_balance
+        field_definitions = {
+            'initial_balance': 'decimal', 'periodic_deposit': 'decimal',
+            'frequency': 'int', 'interest_rate': 'decimal',
+            'duration': 'int', 'target_balance': 'decimal'
         }
+
+        processed_data = {'calculation_type': calculation_type}
+        for field, f_type in field_definitions.items():
+            raw_value = form_data.get(field)
+            if f_type == 'decimal':
+                processed_data[field] = self._safe_decimal_conversion(raw_value)
+            elif f_type == 'int':
+                processed_data[field] = self._safe_int_conversion(raw_value)
         
-        errors = []
-        # Validate based on calculation_type
-        if calculation_type == 'final_balance':
-            if None in [initial_balance, periodic_deposit, frequency, interest_rate, duration]:
-                errors.append("All fields must be valid numbers to calculate Final Balance.")
-            if initial_balance is not None and initial_balance < 0: errors.append("Initial Balance cannot be negative.")
-            if periodic_deposit is not None and periodic_deposit < 0: errors.append("Periodic Deposit cannot be negative.")
-            if interest_rate is not None and interest_rate < 0: errors.append("Annual Interest Rate cannot be negative.")
-            if duration is not None and duration <= 0: errors.append("Duration (Years) must be a positive integer.")
-            if frequency is not None and frequency <= 0: errors.append("Deposit Frequency must be at least once a year.")
+        processed_data['deposit_timing'] = form_data.get('deposit_timing') == 'start'
 
-        elif calculation_type == 'years':
-            if None in [initial_balance, periodic_deposit, frequency, interest_rate, target_balance]:
-                errors.append("All fields (except Duration) must be valid numbers to calculate Duration.")
-            if initial_balance is not None and initial_balance < 0: errors.append("Initial Balance cannot be negative.")
-            if periodic_deposit is not None and periodic_deposit < 0: errors.append("Periodic Deposit cannot be negative.")
-            if interest_rate is not None and interest_rate < 0: errors.append("Annual Interest Rate cannot be negative.")
-            if target_balance is not None and target_balance <= 0: errors.append("Target Balance must be a positive number.")
-            if frequency is not None and frequency <= 0: errors.append("Deposit Frequency must be at least once a year.")
-            # Ensure at least one growth factor is present if initial balance < target
-            if initial_balance is not None and target_balance is not None and initial_balance < target_balance:
-                if (periodic_deposit == 0 or periodic_deposit is None) and (interest_rate == 0 or interest_rate is None):
-                     errors.append("To reach a target balance, you need either periodic deposits or an interest rate (or both).")
-
-        elif calculation_type == 'periodic_deposit':
-            if None in [initial_balance, frequency, interest_rate, duration, target_balance]:
-                errors.append("All fields (except Periodic Deposit) must be valid numbers to calculate Periodic Deposit.")
-            if initial_balance is not None and initial_balance < 0: errors.append("Initial Balance cannot be negative.")
-            if interest_rate is not None and interest_rate < 0: errors.append("Annual Interest Rate cannot be negative.")
-            if duration is not None and duration <= 0: errors.append("Duration (Years) must be a positive integer.")
-            if target_balance is not None and target_balance <= 0: errors.append("Target Balance must be a positive number.")
-            if frequency is not None and frequency <= 0: errors.append("Deposit Frequency must be at least once a year.")
+        errors = self._validate_compound_interest_inputs(processed_data)
         
-        elif calculation_type == 'interest_rate':
-            if None in [initial_balance, periodic_deposit, frequency, duration, target_balance]:
-                errors.append("All fields (except Interest Rate) must be valid numbers to calculate Interest Rate.")
-            if initial_balance is not None and initial_balance < 0: errors.append("Initial Balance cannot be negative.")
-            if periodic_deposit is not None and periodic_deposit < 0: errors.append("Periodic Deposit cannot be negative.")
-            if duration is not None and duration <= 0: errors.append("Duration (Years) must be a positive integer.")
-            if target_balance is not None and target_balance <= 0: errors.append("Target Balance must be a positive number.")
-            if frequency is not None and frequency <= 0: errors.append("Deposit Frequency must be at least once a year.")
-
-        elif calculation_type == 'initial_balance':
-            if None in [periodic_deposit, frequency, interest_rate, duration, target_balance]:
-                errors.append("All fields (except Initial Balance) must be valid numbers to calculate Initial Balance.")
-            if periodic_deposit is not None and periodic_deposit < 0: errors.append("Periodic Deposit cannot be negative.")
-            if interest_rate is not None and interest_rate < 0: errors.append("Annual Interest Rate cannot be negative.")
-            if duration is not None and duration <= 0: errors.append("Duration (Years) must be a positive integer.")
-            if target_balance is not None and target_balance <= 0: errors.append("Target Balance must be a positive number.")
-            if frequency is not None and frequency <= 0: errors.append("Deposit Frequency must be at least once a year.")
-        
-        else:
-            errors.append("Invalid calculation type selected.")
-
         if errors:
             return None, form_data, {"error": " ".join(errors)}
             
@@ -155,69 +139,56 @@ class CompoundInterestWebCalculator(WebCalculator):
 
     def calculate(self, processed_data):
         calculation_type = processed_data['calculation_type']
-        result = {}
-
+        
         try:
-            if calculation_type == 'final_balance':
-                result = compound_interest.calculate_final_balance_and_history(
-                    processed_data['initial_balance'],
-                    processed_data['interest_rate'],
-                    processed_data['duration'],
-                    processed_data['frequency'],
-                    processed_data['periodic_deposit'],
-                    processed_data['deposit_timing']
-                )
-            elif calculation_type == 'years':
-                result = compound_interest.calculate_time_to_reach_goal(
-                    processed_data['initial_balance'],
-                    processed_data['interest_rate'],
-                    processed_data['periodic_deposit'],
-                    processed_data['frequency'],
-                    processed_data['deposit_timing'],
-                    processed_data['target_balance']
-                )
-            elif calculation_type == 'periodic_deposit':
-                result = compound_interest.calculate_periodic_deposit_needed(
-                    processed_data['initial_balance'],
-                    processed_data['interest_rate'],
-                    processed_data['duration'],
-                    processed_data['frequency'],
-                    processed_data['deposit_timing'],
-                    processed_data['target_balance']
-                )
-            elif calculation_type == 'interest_rate':
-                result = compound_interest.calculate_interest_rate_needed(
-                    processed_data['initial_balance'],
-                    processed_data['duration'],
-                    processed_data['frequency'],
-                    processed_data['periodic_deposit'],
-                    processed_data['deposit_timing'],
-                    processed_data['target_balance']
-                )
-            elif calculation_type == 'initial_balance':
-                result = compound_interest.calculate_initial_balance_needed(
-                    processed_data['interest_rate'],
-                    processed_data['duration'],
-                    processed_data['frequency'],
-                    processed_data['periodic_deposit'],
-                    processed_data['deposit_timing'],
-                    processed_data['target_balance']
-                )
-            else:
+            calculation_map = {
+                'final_balance': compound_interest.calculate_final_balance_and_history,
+                'years': compound_interest.calculate_time_to_reach_goal,
+                'periodic_deposit': compound_interest.calculate_periodic_deposit_needed,
+                'interest_rate': compound_interest.calculate_interest_rate_needed,
+                'initial_balance': compound_interest.calculate_initial_balance_needed
+            }
+
+            if calculation_type not in calculation_map:
                 return {"error": "Invalid calculation type specified."}
+
+            # Map form field names to the parameter names expected by the calculation functions
+            parameter_map = {
+                'initial_balance': 'principal',
+                'interest_rate': 'annual_rate',
+                'duration': 'years',
+                'frequency': 'periods_per_year',
+                'periodic_deposit': 'periodic_deposit',
+                'deposit_timing': 'deposit_at_beginning',
+                'target_balance': 'goal_balance'
+            }
+
+            # Define which form fields are needed for each calculation
+            required_form_fields = {
+                'final_balance': ['initial_balance', 'interest_rate', 'duration', 'frequency', 'periodic_deposit', 'deposit_timing'],
+                'years': ['initial_balance', 'interest_rate', 'periodic_deposit', 'frequency', 'deposit_timing', 'target_balance'],
+                'periodic_deposit': ['initial_balance', 'interest_rate', 'duration', 'frequency', 'deposit_timing', 'target_balance'],
+                'interest_rate': ['initial_balance', 'duration', 'frequency', 'periodic_deposit', 'deposit_timing', 'target_balance'],
+                'initial_balance': ['interest_rate', 'duration', 'frequency', 'periodic_deposit', 'deposit_timing', 'target_balance']
+            }
+
+            # Create a new dictionary with the correct parameter names for the specific calculation
+            calculation_args = {}
+            for field in required_form_fields.get(calculation_type, []):
+                if field in processed_data and processed_data[field] is not None:
+                    param_name = parameter_map[field]
+                    calculation_args[param_name] = processed_data[field]
+            
+            # Call the appropriate calculation function with the correctly named arguments
+            result = calculation_map[calculation_type](**calculation_args)
 
             if 'error' in result or 'note' in result:
                 return result
             
-            # Convert Decimal values in the result dictionary and chart_data back to float for JSON serialization
-            for key in ['final_balance', 'principal', 'total_deposits', 'interest_earned', 
-                        'periodic_deposit', 'initial_balance']:
-                if key in result and isinstance(result[key], Decimal):
-                    result[key] = float(result[key])
-            if 'years' in result and isinstance(result['years'], Decimal):
-                result['years'] = float(result['years'])
-            if 'interest_rate' in result and isinstance(result['interest_rate'], Decimal):
-                result['interest_rate'] = float(result['interest_rate'])
+            # Convert Decimal values in the result for JSON serialization
+            for key, value in result.items():
+                if isinstance(value, Decimal):
+                    result[key] = float(value)
             
             if 'chart_data' in result and result['chart_data']:
                 for dataset in result['chart_data']['datasets']:
@@ -241,41 +212,17 @@ class DCAOptimizerWebCalculator(WebCalculator):
         }
 
     def process_form_data(self, form):
-        form_data = form.to_dict()
-        try:
-            total_capital = self._safe_decimal_conversion(form_data.get('total_capital'))
-            share_price = self._safe_decimal_conversion(form_data.get('share_price'))
-            commission_fee = self._safe_decimal_conversion(form_data.get('commission_fee'))
-            annualized_volatility = self._safe_decimal_conversion(form_data.get('annualized_volatility'))
-
-            if None in [total_capital, share_price, commission_fee, annualized_volatility]:
-                return None, form_data, {"error": "All fields must be valid numbers."}
-
-            return {
-                'total_capital': total_capital,
-                'share_price': share_price,
-                'commission_fee': commission_fee,
-                'annualized_volatility': annualized_volatility
-            }, form_data, None
-        except Exception:
-            return None, form_data, {"error": "Invalid input. Please ensure all fields are filled correctly."}
+        fields = ['total_capital', 'share_price', 'commission_fee', 'annualized_volatility']
+        return self._process_simple_form(form, fields)
 
     def calculate(self, processed_data):
-        result = dca_optimizer.calculate_optimal_dca(
-            processed_data['total_capital'],
-            processed_data['share_price'],
-            processed_data['commission_fee'],
-            processed_data['annualized_volatility']
-        )
+        result = dca_optimizer.calculate_optimal_dca(**processed_data)
         if 'error' in result:
             return result
         
-        # Convert Decimal values back to float
         for key in ['trigger_percentage', 'capital_per_trade']:
             if key in result and isinstance(result[key], Decimal):
                 result[key] = float(result[key])
-        # optimal_trades is an int, no conversion needed
-
         return result
 
 class CapitalGainsWebCalculator(WebCalculator):
@@ -289,44 +236,23 @@ class CapitalGainsWebCalculator(WebCalculator):
         }
 
     def process_form_data(self, form):
-        form_data = form.to_dict()
-        try:
-            current_value = self._safe_decimal_conversion(form_data.get('current_value'))
-            cost_basis = self._safe_decimal_conversion(form_data.get('cost_basis'))
-            tax_rate = self._safe_decimal_conversion(form_data.get('tax_rate'))
-
-            if None in [current_value, cost_basis, tax_rate]:
-                return None, form_data, {"error": "All fields must be valid numbers."}
-            
-            return {
-                'current_value': current_value,
-                'cost_basis': cost_basis,
-                'tax_rate': tax_rate
-            }, form_data, None
-        except Exception:
-            return None, form_data, {"error": "Invalid input. Please ensure all fields are filled correctly."}
+        fields = ['current_value', 'cost_basis', 'tax_rate']
+        return self._process_simple_form(form, fields)
 
     def calculate(self, processed_data):
-        result = capital_gains.calculate_required_return(
-            processed_data['current_value'],
-            processed_data['cost_basis'],
-            processed_data['tax_rate']
-        )
+        result = capital_gains.calculate_required_return(**processed_data)
         if 'error' in result or 'note' in result:
             return result
         
-        # Generate chart data
         chart_data = capital_gains.generate_tax_rate_chart_data(
             processed_data['current_value'],
             processed_data['cost_basis']
         )
-        result['chart_data'] = chart_data # Add chart data to result
+        result['chart_data'] = chart_data
         
-        # Convert Decimal values back to float
         for key in ['capital_gain', 'tax_cost', 'post_tax_proceeds', 'required_return']:
             if key in result and isinstance(result[key], Decimal):
                 result[key] = float(result[key])
-
         return result
 
 
@@ -335,7 +261,7 @@ class OptionsStrategyWebCalculator(WebCalculator):
 
     def get_default_form_data(self):
         return {
-            'calculation_type': 'expected_move', # Default to expected move
+            'calculation_type': 'expected_move',
             'stock_price_move': 150,
             'call_price_move': 5,
             'put_price_move': 5,
@@ -348,58 +274,48 @@ class OptionsStrategyWebCalculator(WebCalculator):
         form_data = form.to_dict()
         calculation_type = form_data.get('calculation_type')
         processed_data = {'calculation_type': calculation_type}
-
+        
         try:
             if calculation_type == 'expected_move':
-                stock_price = self._safe_decimal_conversion(form_data.get('stock_price_move'))
-                call_price = self._safe_decimal_conversion(form_data.get('call_price_move'))
-                put_price = self._safe_decimal_conversion(form_data.get('put_price_move'))
-                if None in [stock_price, call_price, put_price]:
-                     return None, form_data, {"error": "All fields for Market's Expected Move must be valid numbers."}
-                processed_data.update({
-                    'stock_price': stock_price,
-                    'call_price': call_price,
-                    'put_price': put_price
-                })
+                fields_map = {
+                    'stock_price': 'stock_price_move',
+                    'call_price': 'call_price_move',
+                    'put_price': 'put_price_move'
+                }
+                error_msg = "All fields for Market's Expected Move must be valid numbers."
             elif calculation_type == 'sell_vs_exercise':
-                stock_price = self._safe_decimal_conversion(form_data.get('stock_price_exercise'))
-                strike_price = self._safe_decimal_conversion(form_data.get('strike_price_exercise'))
-                option_premium = self._safe_decimal_conversion(form_data.get('premium_exercise'))
-                if None in [stock_price, strike_price, option_premium]:
-                    return None, form_data, {"error": "All fields for Sell vs. Exercise must be valid numbers."}
-                processed_data.update({
-                    'stock_price': stock_price,
-                    'strike_price': strike_price,
-                    'option_premium': option_premium
-                })
+                fields_map = {
+                    'stock_price': 'stock_price_exercise',
+                    'strike_price': 'strike_price_exercise',
+                    'option_premium': 'premium_exercise'
+                }
+                error_msg = "All fields for Sell vs. Exercise must be valid numbers."
             else:
                 return None, form_data, {"error": "Invalid calculation type selected."}
+
+            for key, form_field in fields_map.items():
+                value = self._safe_decimal_conversion(form_data.get(form_field))
+                if value is None:
+                    return None, form_data, {"error": error_msg}
+                processed_data[key] = value
             
             return processed_data, form_data, None
         except Exception:
-            return None, form_data, {"error": "Invalid input. Please ensure all fields are filled correctly for the selected options calculation."}
+            return None, form_data, {"error": "Invalid input. Please check all fields."}
 
     def calculate(self, processed_data):
-        calculation_type = processed_data['calculation_type']
-        result = {}
+        calculation_type = processed_data.pop('calculation_type')
+        
         if calculation_type == 'expected_move':
-            result = options_strategy.calculate_expected_move(
-                processed_data['stock_price'],
-                processed_data['call_price'],
-                processed_data['put_price']
-            )
+            result = options_strategy.calculate_expected_move(**processed_data)
         elif calculation_type == 'sell_vs_exercise':
-            result = options_strategy.compare_sell_vs_exercise(
-                processed_data['stock_price'],
-                processed_data['strike_price'],
-                processed_data['option_premium']
-            )
+            result = options_strategy.compare_sell_vs_exercise(**processed_data)
+        else:
+            return {"error": "Invalid calculation type."}
         
         if result:
             result['type'] = calculation_type
-            # Convert Decimal values back to float for all relevant keys
-            for key in ['expected_move', 'expected_percentage', 'upper_bound', 'lower_bound', 
-                        'profit_from_selling', 'profit_from_exercising', 'extrinsic_value']:
-                if key in result and isinstance(result[key], Decimal):
-                    result[key] = float(result[key])
+            for key, value in result.items():
+                if isinstance(value, Decimal):
+                    result[key] = float(value)
         return result
