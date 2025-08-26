@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from calculators import capital_gains, compound_interest, dca_optimizer, options_strategy
+from calculators.web_calculators import CompoundInterestWebCalculator, DCAOptimizerWebCalculator, CapitalGainsWebCalculator, OptionsStrategyWebCalculator
 import json
 
 app = Flask(__name__)
@@ -10,36 +11,18 @@ def index():
 
 @app.route('/compound', methods=['GET', 'POST'])
 def compound():
+    calculator = CompoundInterestWebCalculator()
     result = None
-    form_data = {}
+    form_data = calculator.get_default_form_data() # Initialize with defaults
+
     if request.method == 'POST':
-        try:
-            form_data = request.form.to_dict()
-            initial_balance = float(form_data['initial_balance'])
-            periodic_deposit = float(form_data['periodic_deposit'])
-            frequency = int(form_data['frequency'])
-            deposit_timing = form_data['deposit_timing'] == 'start'
-            interest_rate = float(form_data['interest_rate'])
-            duration = int(form_data['duration'])
+        processed_data, form_data_from_post, error = calculator.process_form_data(request.form)
+        form_data.update(form_data_from_post) # Update with submitted data to persist it in the form
 
-            result = compound_interest.calculate_future_value_and_history(
-                initial_balance, interest_rate, duration, frequency, periodic_deposit, deposit_timing
-            )
-            # Check for error returned by the calculator function
-            if result and 'error' in result:
-                # If the result is an error dict, use it directly
-                pass 
-            else:
-                # Otherwise, it's successful data
-                # The chart_data is already in the result dictionary, no further processing needed
-                pass
-
-        except (ValueError, KeyError) as e:
-            # Catch general form submission errors (e.g., non-numeric input for float fields)
-            result = {'error': f"Please check your inputs. Ensure all fields are filled with valid numbers."}
-        except Exception as e:
-            # Catch any other unexpected errors
-            result = {'error': f"An unexpected error occurred: {e}. Please try again."}
+        if error:
+            result = error
+        else:
+            result = calculator.calculate(processed_data)
 
     return render_template('compound.html', result=result, form_data=form_data)
 
