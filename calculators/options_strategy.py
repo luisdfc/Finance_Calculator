@@ -2,8 +2,12 @@ def calculate_expected_move(stock_price, call_price, put_price):
     """
     Calculates the market's expected price move based on the ATM straddle cost.
     """
-    if stock_price <= 0 or call_price < 0 or put_price < 0:
-        return {"error": "Prices must be positive numbers."}
+    if stock_price <= 0:
+        return {"error": "Current Stock Price must be a positive number."}
+    if call_price < 0:
+        return {"error": "ATM Call Option Price cannot be negative."}
+    if put_price < 0:
+        return {"error": "ATM Put Option Price cannot be negative."}
 
     expected_move = call_price + put_price
     expected_percentage = (expected_move / stock_price) if stock_price > 0 else 0
@@ -21,11 +25,15 @@ def compare_sell_vs_exercise(stock_price, strike_price, option_premium):
     """
     Compares the profit from selling an in-the-money option vs. exercising it.
     """
-    if stock_price <= 0 or strike_price <= 0 or option_premium < 0:
-        return {"error": "Prices must be positive numbers."}
+    if stock_price <= 0:
+        return {"error": "Current Stock Price must be a positive number."}
+    if strike_price <= 0:
+        return {"error": "Option Strike Price must be a positive number."}
+    if option_premium < 0:
+        return {"error": "Option Premium cannot be negative."}
 
     if stock_price <= strike_price:
-        return {"note": "This calculation is for an in-the-money call option where the stock price is greater than the strike price."}
+        return {"note": "This calculation is for an in-the-money call option (stock price > strike price). If the stock price is less than or equal to the strike price, the option has no intrinsic value to exercise for a call."}
 
     profit_from_selling = option_premium
     intrinsic_value = stock_price - strike_price

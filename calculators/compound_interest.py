@@ -1,10 +1,17 @@
+# calculators/compound_interest.py (Updated)
+
 import plotly.graph_objects as go
 
 def calculate_future_value(principal, annual_rate, years, periods_per_year, periodic_deposit, deposit_at_beginning):
     """Calculates the future value of an investment with periodic deposits."""
-    if periods_per_year == 0:
-        return principal
+    # Input validation moved to the main calculation function for consistency
+    if not (principal >= 0 and annual_rate >= 0 and years >= 0 and periods_per_year >= 0 and periodic_deposit >= 0):
+        return {"error": "All numeric inputs must be positive or zero."}
     
+    # Handle the case where periods_per_year is zero to avoid division by zero
+    if periods_per_year == 0:
+        return principal + (periodic_deposit * years) # Simple sum if no compounding
+
     rate_per_period = (annual_rate / 100) / periods_per_year
     num_periods = years * periods_per_year
 
@@ -15,57 +22,95 @@ def calculate_future_value(principal, annual_rate, years, periods_per_year, peri
         if deposit_at_beginning:
             fv_deposits *= (1 + rate_per_period)
     else:
+        # If no interest, it's just the sum of deposits
         fv_deposits = periodic_deposit * num_periods
         
     return fv_principal + fv_deposits
 
 def calculate_future_value_and_history(principal, annual_rate, years, periods_per_year, periodic_deposit, deposit_at_beginning):
-    """Calculates final balance and generates data for a plot."""
+    """
+    Calculates final balance and generates data for a chart in a Chart.js-friendly format.
+    """
+    # Specific input validation for the web context
+    if principal < 0: return {"error": "Initial Balance must be zero or positive."}
+    if periodic_deposit < 0: return {"error": "Periodic Deposit must be zero or positive."}
+    if annual_rate < 0: return {"error": "Annual Interest Rate must be zero or positive."}
+    if years <= 0: return {"error": "Duration (Years) must be a positive integer."}
+    if periods_per_year <= 0: return {"error": "Deposit Frequency must be at least once a year."}
+
     history = []
-    for year in range(years + 1):
+    
+    # Initialize values for the first year (year 0)
+    current_principal_component = principal
+    current_total_deposits_component = 0
+    current_interest_earned_component = 0
+    
+    history.append({
+        'year': 0,
+        'balance': principal,
+        'principal_component': current_principal_component,
+        'total_deposits_component': current_total_deposits_component,
+        'interest_earned_component': current_interest_earned_component
+    })
+
+    for year in range(1, years + 1):
+        # Calculate balance for the current year
         balance = calculate_future_value(principal, annual_rate, year, periods_per_year, periodic_deposit, deposit_at_beginning)
-        total_deposits = periodic_deposit * periods_per_year * year
-        interest = balance - principal - total_deposits
+        
+        # Calculate components up to the current year
+        total_contributions_so_far = principal + (periodic_deposit * periods_per_year * year)
+        
+        # The principal component remains the initial principal
+        principal_component_current_year = principal
+
+        # Total deposits made over time
+        total_deposits_component_current_year = periodic_deposit * periods_per_year * year
+
+        # Interest is the total balance minus initial principal and total deposits
+        interest_earned_component_current_year = balance - principal_component_current_year - total_deposits_component_current_year
+
         history.append({
             'year': year,
             'balance': balance,
-            'principal': principal,
-            'total_deposits': total_deposits,
-            'interest_earned': interest
+            'principal_component': principal_component_current_year,
+            'total_deposits_component': total_deposits_component_current_year,
+            'interest_earned_component': interest_earned_component_current_year
         })
     
     final_result = history[-1]
 
-    # Create a Plotly figure
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=[h['year'] for h in history],
-        y=[h['principal'] for h in history],
-        name='Balance Inicial'
-    ))
-    fig.add_trace(go.Bar(
-        x=[h['year'] for h in history],
-        y=[h['total_deposits'] for h in history],
-        name='Aportaciones Totales'
-    ))
-    fig.add_trace(go.Bar(
-        x=[h['year'] for h in history],
-        y=[h['interest_earned'] for h in history],
-        name='Intereses Generados'
-    ))
-
-    fig.update_layout(
-        barmode='stack',
-        title_text='Crecimiento de la Inversión a lo Largo del Tiempo'
-    )
-    
-    # Get HTML for the plot
-    plot_html = fig.to_html(full_html=False, include_plotlyjs=False, default_height='400px', config={'displayModeBar': False})
+    # Prepare data in a Chart.js-friendly format
+    chart_data = {
+        'labels': [h['year'] for h in history],
+        'datasets': [
+            {
+                'label': 'Initial Principal',
+                'data': [h['principal_component'] for h in history],
+                'backgroundColor': 'rgba(59, 130, 246, 0.7)', # Blue
+                'borderColor': 'rgba(59, 130, 246, 1)',
+                'borderWidth': 1
+            },
+            {
+                'label': 'Total Deposits',
+                'data': [h['total_deposits_component'] for h in history],
+                'backgroundColor': 'rgba(16, 185, 129, 0.7)', # Green
+                'borderColor': 'rgba(16, 185, 129, 1)',
+                'borderWidth': 1
+            },
+            {
+                'label': 'Interest Earned',
+                'data': [h['interest_earned_component'] for h in history],
+                'backgroundColor': 'rgba(245, 158, 11, 0.7)', # Amber
+                'borderColor': 'rgba(245, 158, 11, 1)',
+                'borderWidth': 1
+            }
+        ]
+    }
 
     return {
         "final_balance": final_result['balance'],
-        "principal": final_result['principal'],
-        "total_deposits": final_result['total_deposits'],
-        "interest_earned": final_result['interest_earned'],
-        "plot_html": plot_html
+        "principal": principal, # Keep original principal for display
+        "total_deposits": final_result['total_deposits_component'], # Total deposits at the end
+        "interest_earned": final_result['interest_earned_component'], # Total interest at the end
+        "chart_data": chart_data # Pass the structured data
     }

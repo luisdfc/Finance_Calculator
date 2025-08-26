@@ -4,54 +4,6 @@ import json
 
 app = Flask(__name__)
 
-# Helper to convert plot to JSON
-def plot_to_json(plot_html):
-    """Extracts the data from a Plotly HTML div and returns it as JSON for Chart.js."""
-    if not plot_html:
-        return None
-    try:
-        start_str = 'Plotly.newPlot("plot", '
-        end_str = ', {"displayModeBar": false});'
-        start_index = plot_html.find(start_str)
-        if start_index == -1:
-            return None
-
-        start_index += len(start_str)
-        end_index = plot_html.find(end_str, start_index)
-
-        json_str = plot_html[start_index:end_index]
-        data = json.loads(json_str)
-
-        chartjs_data = {
-            'labels': data[0].get('x', []),
-            'datasets': []
-        }
-
-        for trace in data:
-            chartjs_data['datasets'].append({
-                'label': trace.get('name', ''),
-                'data': trace.get('y', []),
-                'backgroundColor': get_chart_color(trace.get('name')),
-                'borderColor': get_chart_color(trace.get('name')),
-                'borderWidth': 1
-            })
-
-        return json.dumps(chartjs_data)
-    except (json.JSONDecodeError, IndexError) as e:
-        print(f"Error parsing plot HTML: {e}")
-        return None
-
-def get_chart_color(label):
-    """Assigns specific colors to chart datasets for the dark theme."""
-    if 'Inicial' in label:
-        return 'rgba(59, 130, 246, 0.7)' # Blue
-    if 'Aportaciones' in label:
-        return 'rgba(16, 185, 129, 0.7)' # Green
-    if 'Intereses' in label:
-        return 'rgba(245, 158, 11, 0.7)' # Amber
-    return 'rgba(107, 114, 128, 0.7)' # Grey
-
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -73,11 +25,21 @@ def compound():
             result = compound_interest.calculate_future_value_and_history(
                 initial_balance, interest_rate, duration, frequency, periodic_deposit, deposit_timing
             )
-            if result and result.get('plot_html'):
-                result['chart_json'] = plot_to_json(result['plot_html'])
+            # Check for error returned by the calculator function
+            if result and 'error' in result:
+                # If the result is an error dict, use it directly
+                pass 
+            else:
+                # Otherwise, it's successful data
+                # The chart_data is already in the result dictionary, no further processing needed
+                pass
 
         except (ValueError, KeyError) as e:
-            result = {'error': f"Invalid input. Please ensure all fields are filled correctly. Error: {e}"}
+            # Catch general form submission errors (e.g., non-numeric input for float fields)
+            result = {'error': f"Please check your inputs. Ensure all fields are filled with valid numbers."}
+        except Exception as e:
+            # Catch any other unexpected errors
+            result = {'error': f"An unexpected error occurred: {e}. Please try again."}
 
     return render_template('compound.html', result=result, form_data=form_data)
 
@@ -97,8 +59,11 @@ def dca():
             result = dca_optimizer.calculate_optimal_dca(
                 total_capital, share_price, commission_fee, annualized_volatility
             )
+            # No further processing needed, result already contains error or data
         except (ValueError, KeyError) as e:
-             result = {'error': f"Invalid input. Please ensure all fields are filled correctly. Error: {e}"}
+             result = {'error': f"Please check your inputs for the DCA Optimizer. Ensure all fields are filled with valid numbers."}
+        except Exception as e:
+            result = {'error': f"An unexpected error occurred in DCA Optimizer: {e}. Please try again."}
 
     return render_template('dca.html', result=result, form_data=form_data)
 
@@ -116,8 +81,11 @@ def capital_gains_calc():
             result = capital_gains.calculate_required_return(
                 current_value, cost_basis, tax_rate
             )
+            # No further processing needed, result already contains error or data
         except (ValueError, KeyError) as e:
-            result = {'error': f"Invalid input. Please ensure all fields are filled correctly. Error: {e}"}
+            result = {'error': f"Please check your inputs for Capital Gains. Ensure all fields are filled with valid numbers."}
+        except Exception as e:
+            result = {'error': f"An unexpected error occurred in Capital Gains: {e}. Please try again."}
 
     return render_template('capital_gains.html', result=result, form_data=form_data)
 
@@ -144,10 +112,14 @@ def options():
                 result = options_strategy.compare_sell_vs_exercise(
                     stock_price, strike_price, option_premium
                 )
+            
             if result:
-                result['type'] = calculation_type
+                result['type'] = calculation_type # Ensure 'type' is set for front-end conditional rendering
+            
         except (ValueError, KeyError) as e:
-            result = {'error': f"Invalid input. Please ensure all fields are filled correctly. Error: {e}", 'type': calculation_type}
+            result = {'error': f"Please check your inputs for the Options Calculator. Ensure all fields are filled with valid numbers.", 'type': calculation_type}
+        except Exception as e:
+            result = {'error': f"An unexpected error occurred in Options Calculator: {e}. Please try again.", 'type': calculation_type}
 
     return render_template('options.html', result=result, form_data=form_data)
 

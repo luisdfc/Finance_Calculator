@@ -4,27 +4,35 @@ def calculate_optimal_dca(total_capital, share_price, commission_fee, annualized
     """
     Calculates the optimal number of trades and the price-drop trigger for a DCA strategy.
     """
-    if total_capital <= 0 or share_price <= 0 or commission_fee < 0 or annualized_volatility < 0:
-        return {"error": "All inputs must be positive numbers (commission can be 0)."}
+    if total_capital <= 0:
+        return {"error": "Total Capital must be a positive number."}
+    if share_price <= 0:
+        return {"error": "Current Share Price must be a positive number."}
+    if commission_fee < 0:
+        return {"error": "Commission Fee per Trade cannot be negative."}
+    if annualized_volatility < 0:
+        return {"error": "Annualized Volatility cannot be negative."}
 
     # Constraint 1: Total commissions should not exceed 5% of total capital.
     if commission_fee > 0:
         n_commission_cap = math.floor((0.05 * total_capital) / commission_fee)
     else:
-        n_commission_cap = math.floor(total_capital / share_price) if share_price > 0 else 0
-
+        # If no commissions, this constraint is effectively infinite, but capped by viability
+        n_commission_cap = float('inf') 
 
     # Constraint 2: Each trade must be large enough to buy at least one share.
     if (share_price + commission_fee) > 0:
         n_viability_constraint = math.floor(total_capital / (share_price + commission_fee))
-    else:
+    else: # This case should ideally be caught by previous share_price <= 0 check, but for robustness
         n_viability_constraint = 0
 
     n_optimal = min(n_commission_cap, n_viability_constraint)
 
     if n_optimal <= 0:
-        return {"error": "Investment not feasible. The capital is too low to cover the share price and commission for even one trade."}
-
+        # Refined error message
+        return {"error": f"Investment not feasible with €{total_capital:,.2f} capital. You can't even afford one share (€{share_price:,.2f}) plus commission (€{commission_fee:,.2f})."}
+    
+    # Ensure annualized_volatility is handled for n_optimal > 0 case
     optimal_percentage_drop = (annualized_volatility / math.sqrt(n_optimal)) if n_optimal > 0 else 0
 
     return {
