@@ -6,19 +6,30 @@
 <div class="max-w-5xl mx-auto">
     <div class="text-center mb-12 fade-in">
         <h1 class="text-4xl font-extrabold text-white">Compound Interest Calculator</h1>
-        <p class="text-gray-400 mt-2">Project the future value of your investments and visualize its growth.</p>
+        <p class="text-gray-400 mt-2">Project your investment growth or solve for missing variables.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <div class="lg:col-span-2 bg-gray-800/50 p-8 rounded-2xl fade-in">
-            <form method="POST">
+            <form method="POST" id="compoundForm">
                 <div class="space-y-5">
                     <div>
+                        <label for="calculation_type" class="block text-sm font-medium text-gray-400">Calculate:</label>
+                        <select name="calculation_type" id="calculation_type" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="final_balance" {% if form_data.calculation_type == 'final_balance' %}selected{% endif %}>Final Balance</option>
+                            <option value="years" {% if form_data.calculation_type == 'years' %}selected{% endif %}>Duration (Years)</option>
+                            <option value="periodic_deposit" {% if form_data.calculation_type == 'periodic_deposit' %}selected{% endif %}>Periodic Deposit (€)</option>
+                            <option value="interest_rate" {% if form_data.calculation_type == 'interest_rate' %}selected{% endif %}>Annual Interest Rate (%)</option>
+                            <option value="initial_balance" {% if form_data.calculation_type == 'initial_balance' %}selected{% endif %}>Initial Balance (€)</option>
+                        </select>
+                    </div>
+
+                    <div id="field_initial_balance">
                         <label for="initial_balance" class="flex items-center text-sm font-medium text-gray-400">
                             Initial Balance (€)
                             <span class="tooltip ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
-                                <span class="tooltiptext">The starting amount of your investment. Must be a positive number.</span>
+                                <span class="tooltiptext">The starting amount of your investment.</span>
                             </span>
                         </label>
                         <input type="number" name="initial_balance" id="initial_balance" value="{{ form_data.initial_balance | default(1000) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
@@ -28,7 +39,7 @@
                             Periodic Deposit (€)
                             <span class="tooltip ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
-                                <span class="tooltiptext">The amount you add per period. Must be a positive number.</span>
+                                <span class="tooltiptext">The amount you add per period.</span>
                             </span>
                         </label>
                         <input type="number" name="periodic_deposit" id="periodic_deposit" value="{{ form_data.periodic_deposit | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
@@ -69,6 +80,16 @@
                         </label>
                         <input type="number" name="duration" id="duration" value="{{ form_data.duration | default(10) }}" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
+                     <div id="field_target_balance">
+                        <label for="target_balance" class="flex items-center text-sm font-medium text-gray-400">
+                            Target Balance (€)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The desired final amount you wish to reach.</span>
+                            </span>
+                        </label>
+                        <input type="number" name="target_balance" id="target_balance" value="{{ form_data.target_balance | default(20000) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
                 </div>
                 <button type="submit" class="mt-8 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 no-tap-highlight">Calculate</button>
             </form>
@@ -81,10 +102,16 @@
                         <p class="font-bold">Error</p>
                         <p>{{ result.error }}</p>
                     </div>
+                {% elif result.note %}
+                     <div class="bg-blue-900/50 border border-blue-500/30 text-blue-300 p-4 rounded-lg" role="alert">
+                        <p class="font-bold">Note</p>
+                        <p>{{ result.note }}</p>
+                    </div>
                 {% else %}
                     <div class="bg-gray-800/50 p-8 rounded-2xl">
                         <h2 class="text-2xl font-bold text-white mb-6">Calculation Results</h2>
                         <div class="space-y-4">
+                            {% if result.calculated_field == 'final_balance' %}
                             <div class="flex justify-between items-baseline">
                                 <p class="text-gray-400">Final Balance:</p>
                                 <p class="text-3xl font-bold text-indigo-400">€{{ "{:,.2f}".format(result.final_balance) }}</p>
@@ -102,6 +129,92 @@
                                 <p class="text-gray-400">Total Interest Earned:</p>
                                 <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(result.interest_earned) }}</p>
                             </div>
+
+                            {% elif result.calculated_field == 'years' %}
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Years to Reach Goal:</p>
+                                <p class="text-3xl font-bold text-indigo-400">{{ "{:,.2f}".format(result.years) }}</p>
+                            </div>
+                            <hr class="border-gray-700/50">
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Achieved Final Balance:</p>
+                                <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(result.final_balance) }}</p>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Initial Principal:</p>
+                                <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(form_data.initial_balance) }}</p>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Periodic Deposit:</p>
+                                <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(form_data.periodic_deposit) }}</p>
+                            </div>
+
+                            {% elif result.calculated_field == 'periodic_deposit' %}
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Required Periodic Deposit:</p>
+                                <p class="text-3xl font-bold text-indigo-400">€{{ "{:,.2f}".format(result.periodic_deposit) }}</p>
+                            </div>
+                            <hr class="border-gray-700/50">
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Achieved Final Balance:</p>
+                                <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(result.final_balance) }}</p>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Initial Principal:</p>
+                                <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(form_data.initial_balance) }}</p>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Duration (Years):</p>
+                                <p class="text-lg font-medium text-gray-200">{{ "{:,.0f}".format(form_data.duration) }}</p>
+                            </div>
+
+                            {% elif result.calculated_field == 'interest_rate' %}
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Required Annual Interest Rate:</p>
+                                <p class="text-3xl font-bold text-indigo-400">{{ "{:.2%}".format(result.interest_rate / 100) }}</p>
+                            </div>
+                            <hr class="border-gray-700/50">
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Achieved Final Balance:</p>
+                                <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(result.final_balance) }}</p>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Initial Principal:</p>
+                                <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(form_data.initial_balance) }}</p>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Periodic Deposit:</p>
+                                <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(form_data.periodic_deposit) }}</p>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Duration (Years):</p>
+                                <p class="text-lg font-medium text-gray-200">{{ "{:,.0f}".format(form_data.duration) }}</p>
+                            </div>
+
+                            {% elif result.calculated_field == 'initial_balance' %}
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Required Initial Balance:</p>
+                                <p class="text-3xl font-bold text-indigo-400">€{{ "{:,.2f}".format(result.initial_balance) }}</p>
+                            </div>
+                             <hr class="border-gray-700/50">
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Achieved Final Balance:</p>
+                                <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(result.final_balance) }}</p>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Periodic Deposit:</p>
+                                <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(form_data.periodic_deposit) }}</p>
+                            </div>
+                             <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Annual Interest Rate:</p>
+                                <p class="text-lg font-medium text-gray-200">{{ "{:.2%}".format(form_data.interest_rate / 100) }}</p>
+                            </div>
+                            <div class="flex justify-between items-baseline">
+                                <p class="text-gray-400">Duration (Years):</p>
+                                <p class="text-lg font-medium text-gray-200">{{ "{:,.0f}".format(form_data.duration) }}</p>
+                            </div>
+
+                            {% endif %}
                         </div>
                         <div class="mt-8">
                             <canvas id="growthChart"></canvas>
@@ -111,23 +224,16 @@
             {% else %}
                 <div class="bg-gray-800/50 p-8 rounded-2xl text-center h-full flex flex-col justify-center">
                     <h3 class="text-xl font-semibold text-white">Your results will appear here</h3>
-                    <p class="text-gray-500 mt-2">Fill out the form and click "Calculate" to see your investment projection.</p>
+                    <p class="text-gray-500 mt-2">Fill out the form and click "Calculate" to see your investment projection or solve for a missing variable.</p>
                 </div>
             {% endif %}
         </div>
     </div>
     <div class="mt-8 bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
         <h2 class="text-2xl font-bold text-white mb-4">How It's Calculated</h2>
-        <p class="text-gray-400">The future value of your investment is calculated using the formula for the future value of a series of payments (annuity):</p>
+        <p class="text-gray-400">The core future value of your investment is calculated using the formula for the future value of a series of payments (annuity), adapted for deposits at the beginning or end of the period:</p>
         <div class="mt-4 p-4 bg-gray-900/50 rounded-lg text-white font-mono text-sm overflow-x-auto">
-            <!-- Ordinary annuity (end of period) -->
-            $$FV = P(1 + r/n)^{nt} + PMT \times \left[ \frac{( (1 + r/n)^{nt} - 1 )}{(r/n)} \right]$$
-
-            <!-- Annuity due (beginning of period) -->
-            <br><br>
-            If deposits are made at the <em>beginning</em> of each period, multiply the payment term by \((1 + r/n)\):
-            <br>
-            $$FV = P(1 + r/n)^{nt} + PMT \times \left[ \frac{( (1 + r/n)^{nt} - 1 )}{(r/n)} \right] \times (1 + r/n)$$
+            $$FV = P(1 + r/n)^{nt} + PMT \times \left[ \frac{((1 + r/n)^{nt} - 1)}{(r/n)} \times (1 + r/n)^{\text{if beginning}} \right]$$
         </div>
         <div class="mt-4 text-gray-400">
             <p><strong class="text-white">FV:</strong> Future Value of the investment</p>
@@ -136,7 +242,9 @@
             <p><strong class="text-white">n:</strong> Number of times that interest is compounded per year</p>
             <p><strong class="text-white">t:</strong> Number of years the money is invested for</p>
             <p><strong class="text-white">PMT:</strong> Periodic payment</p>
+            <p><strong class="text-white">if beginning:</strong> This factor $(1 + r/n)$ is applied if deposits are made at the beginning of the period.</p>
         </div>
+        <p class="text-gray-400 mt-4">When solving for a missing variable (like time or interest rate), the calculator uses numerical methods (e.g., binary search) to find the value that satisfies the above equation for your target balance.</p>
     </div>
 </div>
 {% endblock %}
@@ -145,7 +253,89 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Access the chart_data directly
+        const form = document.getElementById('compoundForm');
+        const calculationTypeSelect = document.getElementById('calculation_type');
+        const initialBalanceInput = document.getElementById('initial_balance');
+        const periodicDepositInput = document.getElementById('periodic_deposit');
+        const interestRateInput = document.getElementById('interest_rate');
+        const durationInput = document.getElementById('duration');
+        const targetBalanceInput = document.getElementById('target_balance');
+
+        const fieldMap = {
+            'initial_balance': { input: initialBalanceInput, labelText: 'Initial Balance (€)', tooltipText: 'The starting amount of your investment.' },
+            'periodic_deposit': { input: periodicDepositInput, labelText: 'Periodic Deposit (€)', tooltipText: 'The amount you add per period.' },
+            'interest_rate': { input: interestRateInput, labelText: 'Annual Interest Rate (%)', tooltipText: 'The annual interest rate. For 7%, enter 7.' },
+            'duration': { input: durationInput, labelText: 'Duration (Years)', tooltipText: 'The number of years the investment will grow.' },
+            'target_balance': { input: targetBalanceInput, labelText: 'Target Balance (€)', tooltipText: 'The desired final amount you wish to reach.' }
+        };
+
+        function updateFormFields() {
+            const selectedType = calculationTypeSelect.value;
+
+            // Reset all fields to default state (enabled and required with original labels/tooltips)
+            for (const key in fieldMap) {
+                const { input, labelText, tooltipText } = fieldMap[key];
+                const labelElement = input.previousElementSibling.querySelector('span:first-child');
+                const tooltipElement = input.previousElementSibling.querySelector('.tooltiptext');
+                
+                input.disabled = false;
+                input.required = true;
+                input.classList.remove('opacity-50', 'bg-gray-700');
+                if (labelElement) labelElement.textContent = labelText;
+                if (tooltipElement) tooltipElement.textContent = tooltipText;
+
+                // Make target_balance field visible/hidden as needed
+                const fieldContainer = input.closest('div');
+                if (key === 'target_balance') {
+                    if (selectedType === 'final_balance') {
+                        fieldContainer.classList.add('hidden');
+                        input.value = ''; // Clear value when hidden
+                    } else {
+                        fieldContainer.classList.remove('hidden');
+                    }
+                } else {
+                    fieldContainer.classList.remove('hidden'); // Ensure other fields are visible
+                }
+            }
+
+            // Adjust fields based on selected calculation type
+            if (selectedType === 'final_balance') {
+                targetBalanceInput.closest('div').classList.add('hidden'); // Hide target balance for final balance calc
+            } else if (selectedType === 'years') {
+                durationInput.disabled = true;
+                durationInput.required = false;
+                durationInput.value = ''; // Clear value for the calculated field
+                durationInput.classList.add('opacity-50', 'bg-gray-700');
+                durationInput.previousElementSibling.querySelector('span:first-child').textContent = 'Duration (Calculated)';
+            } else if (selectedType === 'periodic_deposit') {
+                periodicDepositInput.disabled = true;
+                periodicDepositInput.required = false;
+                periodicDepositInput.value = '';
+                periodicDepositInput.classList.add('opacity-50', 'bg-gray-700');
+                periodicDepositInput.previousElementSibling.querySelector('span:first-child').textContent = 'Periodic Deposit (Calculated)';
+            } else if (selectedType === 'interest_rate') {
+                interestRateInput.disabled = true;
+                interestRateInput.required = false;
+                interestRateInput.value = '';
+                interestRateInput.classList.add('opacity-50', 'bg-gray-700');
+                interestRateInput.previousElementSibling.querySelector('span:first-child').textContent = 'Annual Interest Rate (Calculated)';
+            } else if (selectedType === 'initial_balance') {
+                initialBalanceInput.disabled = true;
+                initialBalanceInput.required = false;
+                initialBalanceInput.value = '';
+                initialBalanceInput.classList.add('opacity-50', 'bg-gray-700');
+                initialBalanceInput.previousElementSibling.querySelector('span:first-child').textContent = 'Initial Balance (Calculated)';
+            }
+        }
+
+        // Event listener for calculation type change
+        calculationTypeSelect.addEventListener('change', updateFormFields);
+
+        // Initial call to set up the form fields correctly on page load
+        updateFormFields();
+
+
+        // Chart.js rendering logic
         const chartDataJson = '{{ result.chart_data | tojson | safe if result and result.chart_data else "" }}';
         
         if (chartDataJson) {
