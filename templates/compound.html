@@ -16,7 +16,7 @@
                     <div>
                         <label for="calculation_type" class="block text-sm font-medium text-gray-400">Calculate:</label>
                         <select name="calculation_type" id="calculation_type" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="final_balance" {% if form_data.calculation_type == 'final_balance' %}selected{% endif %}>Final Balance</option>
+                            <option value="final_balance" {% if form_data.calculation_type == 'final_balance' %}selected{% endif %}>Final Balance (€)</option>
                             <option value="years" {% if form_data.calculation_type == 'years' %}selected{% endif %}>Duration (Years)</option>
                             <option value="periodic_deposit" {% if form_data.calculation_type == 'periodic_deposit' %}selected{% endif %}>Periodic Deposit (€)</option>
                             <option value="interest_rate" {% if form_data.calculation_type == 'interest_rate' %}selected{% endif %}>Annual Interest Rate (%)</option>
