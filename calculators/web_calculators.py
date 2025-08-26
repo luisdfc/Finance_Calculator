@@ -1,5 +1,4 @@
-# calculators/web_calculators.py (NEW FILE)
-
+from decimal import Decimal, InvalidOperation # Import Decimal and InvalidOperation
 from . import capital_gains, compound_interest, dca_optimizer, options_strategy
 
 class WebCalculator:
@@ -7,11 +6,14 @@ class WebCalculator:
     Base class for all web-based financial calculators.
     Provides common utility methods for handling form data and errors.
     """
-    def _safe_float_conversion(self, value, default_value=None):
-        """Safely converts a string value to float, handling potential errors."""
+    def _safe_decimal_conversion(self, value, default_value=None): # Renamed to decimal conversion
+        """Safely converts a string value to Decimal, handling potential errors."""
         try:
-            return float(value)
-        except (ValueError, TypeError):
+            # Attempt to strip spaces and replace comma with dot for European number format
+            if isinstance(value, str):
+                value = value.strip().replace(',', '.')
+            return Decimal(value)
+        except (InvalidOperation, TypeError):
             return default_value
 
     def _safe_int_conversion(self, value, default_value=None):
@@ -55,11 +57,12 @@ class CompoundInterestWebCalculator(WebCalculator):
     def process_form_data(self, form):
         form_data = form.to_dict()
         try:
-            initial_balance = self._safe_float_conversion(form_data.get('initial_balance'))
-            periodic_deposit = self._safe_float_conversion(form_data.get('periodic_deposit'))
+            # Use _safe_decimal_conversion for all monetary and rate inputs
+            initial_balance = self._safe_decimal_conversion(form_data.get('initial_balance'))
+            periodic_deposit = self._safe_decimal_conversion(form_data.get('periodic_deposit'))
             frequency = self._safe_int_conversion(form_data.get('frequency'))
             deposit_timing = form_data.get('deposit_timing') == 'start'
-            interest_rate = self._safe_float_conversion(form_data.get('interest_rate'))
+            interest_rate = self._safe_decimal_conversion(form_data.get('interest_rate'))
             duration = self._safe_int_conversion(form_data.get('duration'))
 
             # Basic validation before passing to the core calculator function
@@ -78,7 +81,8 @@ class CompoundInterestWebCalculator(WebCalculator):
             return None, form_data, {"error": "Invalid input. Please ensure all fields are filled correctly."}
 
     def calculate(self, processed_data):
-        return compound_interest.calculate_future_value_and_history(
+        # Convert Decimal results back to float for JSON serialization in Flask
+        result = compound_interest.calculate_future_value_and_history(
             processed_data['initial_balance'],
             processed_data['interest_rate'],
             processed_data['duration'],
@@ -86,6 +90,20 @@ class CompoundInterestWebCalculator(WebCalculator):
             processed_data['periodic_deposit'],
             processed_data['deposit_timing']
         )
+        if 'error' in result:
+            return result
+        
+        # Convert Decimal values in the result dictionary and chart_data back to float
+        for key in ['final_balance', 'principal', 'total_deposits', 'interest_earned']:
+            if key in result and isinstance(result[key], Decimal):
+                result[key] = float(result[key])
+        
+        if 'chart_data' in result and result['chart_data']:
+            for dataset in result['chart_data']['datasets']:
+                dataset['data'] = [float(val) if isinstance(val, Decimal) else val for val in dataset['data']]
+
+        return result
+
 
 class DCAOptimizerWebCalculator(WebCalculator):
     """Handles logic for the DCA Optimizer Calculator."""
@@ -101,10 +119,10 @@ class DCAOptimizerWebCalculator(WebCalculator):
     def process_form_data(self, form):
         form_data = form.to_dict()
         try:
-            total_capital = self._safe_float_conversion(form_data.get('total_capital'))
-            share_price = self._safe_float_conversion(form_data.get('share_price'))
-            commission_fee = self._safe_float_conversion(form_data.get('commission_fee'))
-            annualized_volatility = self._safe_float_conversion(form_data.get('annualized_volatility'))
+            total_capital = self._safe_decimal_conversion(form_data.get('total_capital'))
+            share_price = self._safe_decimal_conversion(form_data.get('share_price'))
+            commission_fee = self._safe_decimal_conversion(form_data.get('commission_fee'))
+            annualized_volatility = self._safe_decimal_conversion(form_data.get('annualized_volatility'))
 
             if None in [total_capital, share_price, commission_fee, annualized_volatility]:
                 return None, form_data, {"error": "All fields must be valid numbers."}
@@ -119,12 +137,22 @@ class DCAOptimizerWebCalculator(WebCalculator):
             return None, form_data, {"error": "Invalid input. Please ensure all fields are filled correctly."}
 
     def calculate(self, processed_data):
-        return dca_optimizer.calculate_optimal_dca(
+        result = dca_optimizer.calculate_optimal_dca(
             processed_data['total_capital'],
             processed_data['share_price'],
             processed_data['commission_fee'],
             processed_data['annualized_volatility']
         )
+        if 'error' in result:
+            return result
+        
+        # Convert Decimal values back to float
+        for key in ['trigger_percentage', 'capital_per_trade']:
+            if key in result and isinstance(result[key], Decimal):
+                result[key] = float(result[key])
+        # optimal_trades is an int, no conversion needed
+
+        return result
 
 class CapitalGainsWebCalculator(WebCalculator):
     """Handles logic for the Capital Gains Opportunity Cost Calculator."""
@@ -139,9 +167,9 @@ class CapitalGainsWebCalculator(WebCalculator):
     def process_form_data(self, form):
         form_data = form.to_dict()
         try:
-            current_value = self._safe_float_conversion(form_data.get('current_value'))
-            cost_basis = self._safe_float_conversion(form_data.get('cost_basis'))
-            tax_rate = self._safe_float_conversion(form_data.get('tax_rate'))
+            current_value = self._safe_decimal_conversion(form_data.get('current_value'))
+            cost_basis = self._safe_decimal_conversion(form_data.get('cost_basis'))
+            tax_rate = self._safe_decimal_conversion(form_data.get('tax_rate'))
 
             if None in [current_value, cost_basis, tax_rate]:
                 return None, form_data, {"error": "All fields must be valid numbers."}
@@ -155,11 +183,28 @@ class CapitalGainsWebCalculator(WebCalculator):
             return None, form_data, {"error": "Invalid input. Please ensure all fields are filled correctly."}
 
     def calculate(self, processed_data):
-        return capital_gains.calculate_required_return(
-            processed_data['current_value'],
-            processed_data['cost_basis'],
-            processed_data['tax_rate']
-        )
+         result = capital_gains.calculate_required_return(
+             processed_data['current_value'],
+             processed_data['cost_basis'],
+             processed_data['tax_rate']
+         )
+         if 'error' in result or 'note' in result:
+             return result
+        
+         # Generate chart data
+         chart_data = capital_gains.generate_tax_rate_chart_data(
+             processed_data['current_value'],
+             processed_data['cost_basis']
+         )
+         result['chart_data'] = chart_data # Add chart data to result
+        
+         # Convert Decimal values back to float
+         for key in ['capital_gain', 'tax_cost', 'post_tax_proceeds', 'required_return']:
+             if key in result and isinstance(result[key], Decimal):
+                 result[key] = float(result[key])
+
+         return result
+
 
 class OptionsStrategyWebCalculator(WebCalculator):
     """Handles logic for the Options Strategy Calculator."""
@@ -182,9 +227,9 @@ class OptionsStrategyWebCalculator(WebCalculator):
 
         try:
             if calculation_type == 'expected_move':
-                stock_price = self._safe_float_conversion(form_data.get('stock_price_move'))
-                call_price = self._safe_float_conversion(form_data.get('call_price_move'))
-                put_price = self._safe_float_conversion(form_data.get('put_price_move'))
+                stock_price = self._safe_decimal_conversion(form_data.get('stock_price_move'))
+                call_price = self._safe_decimal_conversion(form_data.get('call_price_move'))
+                put_price = self._safe_decimal_conversion(form_data.get('put_price_move'))
                 if None in [stock_price, call_price, put_price]:
                      return None, form_data, {"error": "All fields for Market's Expected Move must be valid numbers."}
                 processed_data.update({
@@ -193,9 +238,9 @@ class OptionsStrategyWebCalculator(WebCalculator):
                     'put_price': put_price
                 })
             elif calculation_type == 'sell_vs_exercise':
-                stock_price = self._safe_float_conversion(form_data.get('stock_price_exercise'))
-                strike_price = self._safe_float_conversion(form_data.get('strike_price_exercise'))
-                option_premium = self._safe_float_conversion(form_data.get('premium_exercise'))
+                stock_price = self._safe_decimal_conversion(form_data.get('stock_price_exercise'))
+                strike_price = self._safe_decimal_conversion(form_data.get('strike_price_exercise'))
+                option_premium = self._safe_decimal_conversion(form_data.get('premium_exercise'))
                 if None in [stock_price, strike_price, option_premium]:
                     return None, form_data, {"error": "All fields for Sell vs. Exercise must be valid numbers."}
                 processed_data.update({
@@ -225,7 +270,12 @@ class OptionsStrategyWebCalculator(WebCalculator):
                 processed_data['strike_price'],
                 processed_data['option_premium']
             )
-        # Ensure the 'type' is propagated for front-end rendering
+        
         if result:
             result['type'] = calculation_type
+            # Convert Decimal values back to float for all relevant keys
+            for key in ['expected_move', 'expected_percentage', 'upper_bound', 'lower_bound', 
+                        'profit_from_selling', 'profit_from_exercising', 'extrinsic_value']:
+                if key in result and isinstance(result[key], Decimal):
+                    result[key] = float(result[key])
         return result
