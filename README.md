@@ -4,38 +4,59 @@
 [![Flask](https://img.shields.io/badge/flask-2.x-green.svg)](https://flask.palletsprojects.com/)  
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
-**FinCalc** is a modern, easy-to-use web application that provides a suite of powerful financial calculators.  
-Designed for investors who want to make informed, data-driven decisions, FinCalc simplifies complex financial questions with a clean and intuitive interface.
+**FinCalc** is a modern, easy-to-use web application that provides a suite of powerful financial calculators. Designed for investors who want to make informed, data-driven decisions, FinCalc simplifies complex financial questions with a clean and intuitive interface.
 
 ---
 
 ## ✨ Features
 
-This application includes four key calculators:
+This application includes four key calculators, each with unique functionalities:
 
 ### 1. 📈 Compound Interest Calculator
-Project the future value of your investments and visualize growth with the power of compounding.  
+A versatile tool that not only projects the future value of your investments but can also solve for any missing variable. You can calculate:
+- **Final Balance**: See how your investment will grow over time.
+- **Time to Goal**: Determine how long it will take to reach a specific financial target.
+- **Required Periodic Deposit**: Find out how much you need to save regularly to meet your goals.
+- **Required Interest Rate**: Calculate the annual return needed to reach your target.
+- **Required Initial Balance**: Determine the starting principal needed to achieve a future sum.
 
 ---
 
 ### 2. 💰 DCA Strategy Optimizer
-Find your optimal **Dollar-Cost Averaging (DCA)** strategy.  
-Balances commission costs against the benefits of averaging into a position.
+Find your optimal **Dollar-Cost Averaging (DCA)** strategy. This calculator helps you balance commission costs against the benefits of averaging into a position by determining the ideal number of trades and the price-drop percentage that should trigger your next investment.
 
 ---
 
 ### 3. 🔄 Capital Gains Opportunity Cost
-Decide if it’s worth selling an asset to reinvest elsewhere by calculating the **breakeven return** required.  
+Decide if it’s worth selling an asset to reinvest elsewhere by calculating the **breakeven return** required on a new investment to make up for the taxes you'll pay on the sale of the first one.
 
 ---
 
 ### 4. ⚖️ Options Strategy Calculator
+A dual-functionality tool for options traders:
+- **Market's Expected Move**: Estimate the potential price swing of a stock based on the prices of its at-the-money options.
+- **Sell vs. Exercise**: Compare the financial outcomes of selling your option versus exercising it to help you maximize your profit.
 
-#### a) Market's Expected Move
-Estimate price swings before events (e.g., earnings reports).    
+---
 
-#### b) Sell vs. Exercise
-Compare outcomes of selling vs. exercising an option.  
+## 📸 Screenshots
+
+Here's a look at the FinCalc interface:
+
+**Main Page**
+![Main Page](screenshots/Main_page.png)
+
+**Compound Interest Calculator**
+![Compound Interest Calculator](screenshots/Compound_Interest_Calculator.png)
+
+**DCA Strategy Optimizer**
+![DCA Strategy Optimizer](screenshots/DCA_Strategy_Optimizer.png)
+
+**Capital Gains Opportunity Cost Calculator**
+![Capital Gains Opportunity Cost Calculator](screenshots/Capital_Gains_Opportunity_Cost.png)
+
+**Options Strategy Calculator**
+![Options Strategy Calculator](screenshots/Options_Strategy_Calculator.png)
 
 ---
 
