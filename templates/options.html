@@ -180,7 +180,7 @@
                                 {% endif %}
                                 {% if result.greeks %}
                                 <div class="mt-6">
-                                    <h4 class="font-semibold text-white mb-2 text-center">Option Greeks (European Only)</h4>
+                                    <h4 class="font-semibold text-white mb-2 text-center">Option Greeks</h4>
                                     <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                                         <div class="flex justify-between"><span class="text-gray-400">Delta:</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.delta) }}</span></div>
                                         <div class="flex justify-between"><span class="text-gray-400">Gamma:</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.gamma) }}</span></div>
@@ -476,8 +476,6 @@
 
             try {
                 const chartData = JSON.parse(plChartDataJson);
-                const strikePrice = chartData.strikePrice;
-                const optionType = chartData.optionType;
                 const ctx = document.getElementById('plChart').getContext('2d');
 
                 if (charts.pl) charts.pl.destroy();
@@ -495,9 +493,7 @@
                                 callbacks: {
                                     label: function(context) {
                                         let label = context.dataset.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
+                                        if (label) { label += ': '; }
                                         if (context.parsed.y !== null) {
                                             label += new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(context.parsed.y);
                                         }
@@ -513,7 +509,7 @@
                             line: {
                                 tension: 0.1,
                                 fill: false,
-                                pointRadius: 0, // Add this line
+                                pointRadius: 0,
                                 segment: {
                                     borderColor: ctx => {
                                         const profit = ctx.p1.parsed.y;
@@ -551,34 +547,23 @@
                 window.MathJax.typeset();
             }
 
-            // Defer chart rendering until tab is visible
-            setTimeout(() => {
-                if (targetId === 'advanced_breakeven') {
-                    renderBreakevenChart();
-                }
-                if (targetId === 'black_scholes') {
-                    renderPlChart();
-                }
-            }, 50); // Small delay to ensure panel is visible
+            // *** THE FIX: Render charts directly after the panel is made visible ***
+            if (targetId === 'advanced_breakeven') {
+                renderBreakevenChart();
+            }
+            if (targetId === 'black_scholes') {
+                renderPlChart();
+            }
         }
 
         tabs.forEach(tab => {
             tab.addEventListener('click', () => switchTab(tab.dataset.tabTarget));
         });
 
-        // Determine which tab to show on page load and render charts
+        // This call on page load now correctly triggers the chart rendering
+        // because the rendering logic is inside the switchTab function itself.
         const lastCalculationType = '{{ result.type | default("expected_move") }}';
         switchTab(lastCalculationType);
-
-        // Use a timeout to ensure the tab panel is visible before rendering the chart
-        setTimeout(() => {
-            if (lastCalculationType === 'advanced_breakeven') {
-                renderBreakevenChart();
-            }
-            if (lastCalculationType === 'black_scholes') {
-                renderPlChart();
-            }
-        }, 100); // 100ms delay
         
     });
 </script>

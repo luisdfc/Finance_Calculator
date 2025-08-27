@@ -46,30 +46,34 @@ def _approximate_american_greeks(s, k, t, r, sigma, option_type, steps=100):
     # Small changes for bumping
     ds = s * Decimal('0.01')
     d_sigma = Decimal('0.01') # Corresponds to 1% change in volatility
-    dt = Decimal('1') / Decimal('365') # One day change
+    dt = Decimal('1') 
     dr = Decimal('0.01') # Corresponds to 1% change in risk-free rate
     
     # Initial price
-    price = binomial_american_option(s, k, t, r, sigma, option_type, steps)['price']
+    price = _binomial_tree_price_only(s, k, t, r, sigma, option_type, steps)
     
     # Delta
-    price_up = binomial_american_option(s + ds, k, t, r, sigma, option_type, steps)['price']
-    price_down = binomial_american_option(s - ds, k, t, r, sigma, option_type, steps)['price']
+    price_up = _binomial_tree_price_only(s + ds, k, t, r, sigma, option_type, steps)
+    price_down = _binomial_tree_price_only(s - ds, k, t, r, sigma, option_type, steps)
     greeks['delta'] = (price_up - price_down) / (2 * ds)
     
     # Gamma
     greeks['gamma'] = (price_up - 2 * price + price_down) / (ds ** 2)
     
     # Theta (per day)
-    price_t_minus_1 = binomial_american_option(s, k, t - 1, r, sigma, option_type, steps)['price']
-    greeks['theta'] = (price_t_minus_1 - price)
+    if t > 1:
+        price_t_minus_1 = _binomial_tree_price_only(s, k, t - dt, r, sigma, option_type, steps)
+        greeks['theta'] = (price_t_minus_1 - price)
+    else:
+        greeks['theta'] = Decimal('0')
+
 
     # Vega (per 1% change)
-    price_vega_up = binomial_american_option(s, k, t, r, sigma + d_sigma*100, option_type, steps)['price']
+    price_vega_up = _binomial_tree_price_only(s, k, t, r, sigma + d_sigma*100, option_type, steps)
     greeks['vega'] = (price_vega_up - price)
     
     # Rho (per 1% change)
-    price_rho_up = binomial_american_option(s, k, t, r + dr*100, sigma, option_type, steps)['price']
+    price_rho_up = _binomial_tree_price_only(s, k, t, r + dr*100, sigma, option_type, steps)
     greeks['rho'] = (price_rho_up - price)
 
     return greeks
@@ -136,13 +140,11 @@ def _calculate_pl_chart(s, k, price, option_type):
         'optionType': option_type     # This line is also crucial
     }
 
-def binomial_american_option(s, k, t, r, sigma, option_type, steps=100):
+def _binomial_tree_price_only(s, k, t, r, sigma, option_type, steps=100):
     """
-    Calculates the price of an American option and its approximated Greeks.
+    Calculates the price of an American option using the Binomial Tree model without calculating greeks.
+    This internal function is used to prevent recursion when calculating greeks.
     """
-    if s <= 0 or k <= 0 or t <= 0 or sigma <= 0:
-        return {'error': 'All inputs must be positive values for the Binomial model.'}
-
     t_years = t / Decimal('365')
     r_dec = r / Decimal('100')
     sigma_dec = sigma / Decimal('100')
@@ -168,7 +170,18 @@ def binomial_american_option(s, k, t, r, sigma, option_type, steps=100):
             else:
                 option_values[j] = max(option_values[j], k - st_price)
 
-    price = option_values[0]
+    return option_values[0]
+
+def binomial_american_option(s, k, t, r, sigma, option_type, steps=100):
+    """
+    Calculates the price of an American option and its approximated Greeks.
+    """
+    if s <= 0 or k <= 0 or t <= 0 or sigma <= 0:
+        return {'error': 'All inputs must be positive values for the Binomial model.'}
+
+    # Calculate the price using the internal price-only function
+    price = _binomial_tree_price_only(s, k, t, r, sigma, option_type, steps)
+    
     result = {'price': price}
 
     # Calculate and add Greeks for American options
