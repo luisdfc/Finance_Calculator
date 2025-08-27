@@ -37,6 +37,42 @@ def _norm_pdf_decimal(x):
     pi = Decimal(math.pi)
     return (-(x**2 / Decimal('2'))).exp() / (Decimal('2') * pi).sqrt()
 
+def _approximate_american_greeks(s, k, t, r, sigma, option_type, steps=100):
+    """
+    Approximates Greeks for American options using numerical differentiation (bumping).
+    """
+    greeks = {}
+    
+    # Small changes for bumping
+    ds = s * Decimal('0.01')
+    d_sigma = Decimal('0.01') # Corresponds to 1% change in volatility
+    dt = Decimal('1') / Decimal('365') # One day change
+    dr = Decimal('0.01') # Corresponds to 1% change in risk-free rate
+    
+    # Initial price
+    price = binomial_american_option(s, k, t, r, sigma, option_type, steps)['price']
+    
+    # Delta
+    price_up = binomial_american_option(s + ds, k, t, r, sigma, option_type, steps)['price']
+    price_down = binomial_american_option(s - ds, k, t, r, sigma, option_type, steps)['price']
+    greeks['delta'] = (price_up - price_down) / (2 * ds)
+    
+    # Gamma
+    greeks['gamma'] = (price_up - 2 * price + price_down) / (ds ** 2)
+    
+    # Theta (per day)
+    price_t_minus_1 = binomial_american_option(s, k, t - 1, r, sigma, option_type, steps)['price']
+    greeks['theta'] = (price_t_minus_1 - price)
+
+    # Vega (per 1% change)
+    price_vega_up = binomial_american_option(s, k, t, r, sigma + d_sigma*100, option_type, steps)['price']
+    greeks['vega'] = (price_vega_up - price)
+    
+    # Rho (per 1% change)
+    price_rho_up = binomial_american_option(s, k, t, r + dr*100, sigma, option_type, steps)['price']
+    greeks['rho'] = (price_rho_up - price)
+
+    return greeks
 
 def calculate_expected_move(stock_price, call_price, put_price):
     """
@@ -83,29 +119,26 @@ def compare_sell_vs_exercise(stock_price, strike_price, option_premium):
 
 def _calculate_pl_chart(s, k, price, option_type):
     """
-    Generates the P/L chart data for an option.
+    Generates the P/L chart data for an option, keeping calculations in Decimal.
     """
-    price_range = np.linspace(float(s) * 0.7, float(s) * 1.3, 100)
+    s, k, price = Decimal(s), Decimal(k), Decimal(price)
+    price_range = [s * Decimal(f) for f in np.linspace(0.7, 1.3, 100)]
+    
     if option_type == 'call':
-        profit_loss = [max(p - float(k), 0) - float(price) for p in price_range]
-    else:  # put
-        profit_loss = [max(float(k) - p, 0) - float(price) for p in price_range]
-
+        profit_loss = [max(p - k, Decimal('0')) - price for p in price_range]
+    else: # put
+        profit_loss = [max(k - p, Decimal('0')) - price for p in price_range]
+    
     return {
-        'labels': [float(p) for p in price_range],
-        'datasets': [{
-            'label': 'Profit/Loss at Expiration',
-            'data': profit_loss,
-            'fill': False,
-            'tension': 0.1,
-        }],
-        'strikePrice': float(k),
-        'optionType': option_type
+        'labels': [float(p) for p in price_range], # Convert to float for Chart.js
+        'datasets': [{'label': 'Profit/Loss at Expiration', 'data': [float(pl) for pl in profit_loss], 'fill': False, 'tension': 0.1, }],
+        'strikePrice': float(k),      # This line is crucial for the graph coloring
+        'optionType': option_type     # This line is also crucial
     }
 
 def binomial_american_option(s, k, t, r, sigma, option_type, steps=100):
     """
-    Calculates the price of an American option using the Binomial Tree model.
+    Calculates the price of an American option and its approximated Greeks.
     """
     if s <= 0 or k <= 0 or t <= 0 or sigma <= 0:
         return {'error': 'All inputs must be positive values for the Binomial model.'}
@@ -137,6 +170,11 @@ def binomial_american_option(s, k, t, r, sigma, option_type, steps=100):
 
     price = option_values[0]
     result = {'price': price}
+
+    # Calculate and add Greeks for American options
+    greeks = _approximate_american_greeks(s, k, t, r, sigma, option_type, steps)
+    result['greeks'] = greeks
+
     result['pl_chart_data'] = _calculate_pl_chart(s, k, price, option_type)
     return result
 
@@ -190,41 +228,44 @@ def calculate_black_scholes(s, k, t, r, sigma, option_type, market_premium=None,
 
 def calculate_implied_volatility(s, k, t, r, market_premium, option_type, style='european'):
     """
-    Calculates the implied volatility and provides an explanatory text.
+    Calculates the implied volatility using the Newton-Raphson method for faster convergence.
     """
-    low_vol = Decimal('0.001')
-    high_vol = Decimal('5.0')
-    
-    for i in range(100):
-        mid_vol = (low_vol + high_vol) / 2
-        price_at_mid_vol_result = calculate_black_scholes(s, k, t, r, mid_vol * 100, option_type, style=style)
-        if 'error' in price_at_mid_vol_result: return price_at_mid_vol_result
-        price_at_mid_vol = price_at_mid_vol_result['price']
-        
-        if price_at_mid_vol < market_premium:
-            low_vol = mid_vol
-        else:
-            high_vol = mid_vol
-            
-        if abs(high_vol - low_vol) < Decimal('0.0001'):
-            break
-            
-    implied_vol = (low_vol + high_vol) / 2
-    explanation = f"An Implied Volatility of {implied_vol:.2%} suggests that the market expects the stock to have an annualized price swing of this magnitude. A high IV indicates expectations of large price movements (making options more expensive), while a low IV suggests the market expects the price to be more stable."
+    MAX_ITERATIONS = 100
+    PRECISION = Decimal('1.0e-5')
+    sigma = Decimal('0.5')  # Initial guess
 
-    return {
-        'implied_volatility': implied_vol,
-        'explanation': explanation
-    }
+    for i in range(MAX_ITERATIONS):
+        price_result = calculate_black_scholes(s, k, t, r, sigma * 100, option_type, style=style)
+        if 'error' in price_result:
+            return price_result
+        
+        price = price_result['price']
+        vega = price_result['greeks']['vega'] * 100 # Vega is per 1%, so we scale it
+        
+        diff = price - market_premium
+        if abs(diff) < PRECISION:
+            explanation = f"An Implied Volatility of {sigma:.2%} suggests that the market expects the stock to have an annualized price swing of this magnitude. A high IV indicates expectations of large price movements (making options more expensive), while a low IV suggests the market expects the price to be more stable."
+            return {
+                'implied_volatility': sigma,
+                'explanation': explanation
+            }
+
+        if vega == 0:
+            # Cannot converge if vega is zero, fallback to a simpler error
+            return {"error": "Could not find a solution for Implied Volatility. The option may be too far in- or out-of-the-money."}
+            
+        sigma = sigma - diff / vega
+
+    return {"error": "Implied Volatility could not be found within the maximum number of iterations."}
 
 def calculate_iv_rank(current_iv, iv_high, iv_low):
     """
-    Calculates the IV Rank and provides a contextual explanation.
+    Calculates the IV Rank and provides a contextual explanation with improved error handling.
     """
-    if not (iv_low < current_iv < iv_high):
-        return {"error": "Current IV must be between the 52-week high and low."}
     if iv_high <= iv_low:
-        return {"error": "52-week high must be greater than the 52-week low."}
+        return {"error": f"52-week high ({iv_high:.2%}) must be greater than the 52-week low ({iv_low:.2%})."}
+    if not (iv_low <= current_iv <= iv_high):
+        return {"error": f"Current IV ({current_iv:.2%}) must be between the 52-week high ({iv_high:.2%}) and low ({iv_low:.2%}). Please enter a value within this range."}
     
     iv_rank = (current_iv - iv_low) / (iv_high - iv_low)
     
@@ -271,7 +312,7 @@ def calculate_advanced_breakeven(inputs):
 
     required_move = _solve_for_move_plot(inputs['gamma'], inputs['delta'], total_headwind, inputs['option_type'])
     if required_move is None:
-        return {"error": f"The total cost headwind of €{-total_headwind:.2f} is too high to overcome with the given greeks."}
+        return {"error": f"The total cost headwind of €{-total_headwind:.2f} is too high to overcome. With the given Gamma and Delta, there is no stock price movement that can generate enough profit to cover the costs of theta decay, vega, and the bid-ask spread."}
 
     results.update({'required_move': required_move, 'target_price': inputs['current_stock_price'] + required_move, 'percent_move': (required_move / inputs['current_stock_price']) * 100})
     
