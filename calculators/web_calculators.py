@@ -283,9 +283,10 @@ class CapitalGainsWebCalculator(WebCalculator):
 
 
 class OptionsStrategyWebCalculator(WebCalculator):
-    """Handles logic for the Options Strategy Calculator."""
+    """Handles logic for the Options Strategy Calculator with enhanced validation."""
 
     def get_default_form_data(self):
+        # Default values remain the same as the previous version
         return {
             'calculation_type': 'expected_move',
             'stock_price_move': 150,
@@ -296,11 +297,18 @@ class OptionsStrategyWebCalculator(WebCalculator):
             'premium_exercise': 10.50,
             's_bs': 100,
             'k_bs': 100,
-            't_bs': 90, # Days
-            'r_bs': 5, # Percentage
-            'sigma_bs': 20, # Percentage
+            't_bs': 90,
+            'r_bs': 5,
+            'sigma_bs': 20,
             'option_type_bs': 'call',
+            'style_bs': 'european',
             'market_premium_bs': 5.0,
+            's_iv': 100,
+            'k_iv': 100,
+            't_iv': 90,
+            'r_iv': 5,
+            'market_premium_iv': 5.0,
+            'option_type_iv': 'call',
             'current_stock_price_adv': 100,
             'delta_adv': 0.5,
             'gamma_adv': 0.08,
@@ -311,6 +319,28 @@ class OptionsStrategyWebCalculator(WebCalculator):
             'days_to_hold_adv': 10,
             'option_type_adv': 'call'
         }
+    
+    def _validate_options_inputs(self, data, calc_type):
+        """Provides specific validation for each calculator type."""
+        error_messages = []
+        # Positive value checks
+        positive_fields = {
+            'expected_move': ['stock_price', 'call_price', 'put_price'],
+            'sell_vs_exercise': ['stock_price', 'strike_price', 'option_premium'],
+            'black_scholes': ['s', 'k', 't', 'sigma'],
+            'implied_volatility': ['s', 'k', 't', 'market_premium'],
+            'advanced_breakeven': ['current_stock_price', 'gamma', 'days_to_hold']
+        }
+        if calc_type in positive_fields:
+            for field in positive_fields[calc_type]:
+                if data.get(field) is not None and data[field] <= 0:
+                    error_messages.append(f"{field.replace('_', ' ').title()} must be a positive number.")
+
+        # Specific check for theta in advanced breakeven
+        if calc_type == 'advanced_breakeven' and data.get('theta') is not None and data['theta'] > 0:
+            error_messages.append("Theta must be a negative number for long options.")
+            
+        return error_messages
 
     def process_form_data(self, form):
         form_data = form.to_dict()
@@ -318,38 +348,20 @@ class OptionsStrategyWebCalculator(WebCalculator):
         processed_data = {'calculation_type': calculation_type}
         
         try:
+            # Field mapping logic remains the same
             if calculation_type == 'expected_move':
-                fields_map = {
-                    'stock_price': 'stock_price_move',
-                    'call_price': 'call_price_move',
-                    'put_price': 'put_price_move'
-                }
-                error_msg = "All fields for Market's Expected Move must be valid numbers."
+                fields_map = { 'stock_price': 'stock_price_move', 'call_price': 'call_price_move', 'put_price': 'put_price_move' }
             elif calculation_type == 'sell_vs_exercise':
-                fields_map = {
-                    'stock_price': 'stock_price_exercise',
-                    'strike_price': 'strike_price_exercise',
-                    'option_premium': 'premium_exercise'
-                }
-                error_msg = "All fields for Sell vs. Exercise must be valid numbers."
+                fields_map = { 'stock_price': 'stock_price_exercise', 'strike_price': 'strike_price_exercise', 'option_premium': 'premium_exercise' }
             elif calculation_type == 'black_scholes':
-                fields_map = {
-                    's': 's_bs', 'k': 'k_bs', 't': 't_bs', 'r': 'r_bs', 'sigma': 'sigma_bs', 'market_premium': 'market_premium_bs'
-                }
-                error_msg = "All fields for Black-Scholes must be valid numbers."
+                fields_map = { 's': 's_bs', 'k': 'k_bs', 't': 't_bs', 'r': 'r_bs', 'sigma': 'sigma_bs', 'market_premium': 'market_premium_bs' }
                 processed_data['option_type'] = form_data.get('option_type_bs', 'call')
+                processed_data['style'] = form_data.get('style_bs', 'european')
+            elif calculation_type == 'implied_volatility':
+                 fields_map = { 's': 's_iv', 'k': 'k_iv', 't': 't_iv', 'r': 'r_iv', 'market_premium': 'market_premium_iv' }
+                 processed_data['option_type'] = form_data.get('option_type_iv', 'call')
             elif calculation_type == 'advanced_breakeven':
-                fields_map = {
-                    'current_stock_price': 'current_stock_price_adv',
-                    'delta': 'delta_adv',
-                    'gamma': 'gamma_adv',
-                    'theta': 'theta_adv',
-                    'vega': 'vega_adv',
-                    'bid_ask_spread': 'bid_ask_spread_adv',
-                    'expected_iv_change': 'expected_iv_change_adv',
-                    'days_to_hold': 'days_to_hold_adv',
-                }
-                error_msg = "All fields for Advanced Breakeven must be valid numbers."
+                fields_map = { 'current_stock_price': 'current_stock_price_adv', 'delta': 'delta_adv', 'gamma': 'gamma_adv', 'theta': 'theta_adv', 'vega': 'vega_adv', 'bid_ask_spread': 'bid_ask_spread_adv', 'expected_iv_change': 'expected_iv_change_adv', 'days_to_hold': 'days_to_hold_adv' }
                 processed_data['option_type'] = form_data.get('option_type_adv', 'call')
             else:
                 return None, form_data, {"error": "Invalid calculation type selected."}
@@ -357,26 +369,31 @@ class OptionsStrategyWebCalculator(WebCalculator):
             for key, form_field in fields_map.items():
                 value = self._safe_decimal_conversion(form_data.get(form_field))
                 if value is None:
-                    # market_premium is optional
-                    if key == 'market_premium':
-                        processed_data[key] = None
-                        continue
-                    return None, form_data, {"error": error_msg}
+                    if key != 'market_premium': # market_premium is optional
+                        return None, form_data, {"error": f"Please provide a valid number for {form_field.replace('_', ' ')}."}
                 processed_data[key] = value
+            
+            # Perform specific validation after conversion
+            errors = self._validate_options_inputs(processed_data, calculation_type)
+            if errors:
+                return None, form_data, {"error": " ".join(errors)}
             
             return processed_data, form_data, None
         except Exception:
-            return None, form_data, {"error": "Invalid input. Please check all fields."}
+            return None, form_data, {"error": "An unexpected error occurred while processing inputs."}
 
     def calculate(self, processed_data):
         calculation_type = processed_data.pop('calculation_type')
         
+        # Mapping to the correct function call
         if calculation_type == 'expected_move':
             result = options_strategy.calculate_expected_move(**processed_data)
         elif calculation_type == 'sell_vs_exercise':
             result = options_strategy.compare_sell_vs_exercise(**processed_data)
         elif calculation_type == 'black_scholes':
             result = options_strategy.calculate_black_scholes(**processed_data)
+        elif calculation_type == 'implied_volatility':
+            result = options_strategy.calculate_implied_volatility(**processed_data)
         elif calculation_type == 'advanced_breakeven':
             result = options_strategy.calculate_advanced_breakeven(processed_data)
         else:
@@ -384,9 +401,13 @@ class OptionsStrategyWebCalculator(WebCalculator):
         
         if result:
             result['type'] = calculation_type
-            # Keep Decimal for precision where possible, but handle float conversion for chart data
-            if 'chart_data' not in result:
+            # Convert final Decimal results to float for JSON serialization, except for charts
+            if 'chart_data' not in result and 'pl_chart_data' not in result:
                 for key, value in result.items():
                     if isinstance(value, Decimal):
                         result[key] = float(value)
+                    elif isinstance(value, dict): # For Greeks
+                        for sub_key, sub_value in value.items():
+                             if isinstance(sub_value, Decimal):
+                                result[key][sub_key] = float(sub_value)
         return result
