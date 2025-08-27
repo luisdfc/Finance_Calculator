@@ -88,12 +88,19 @@ def _calculate_pl_chart(s, k, price, option_type):
     price_range = np.linspace(float(s) * 0.7, float(s) * 1.3, 100)
     if option_type == 'call':
         profit_loss = [max(p - float(k), 0) - float(price) for p in price_range]
-    else: # put
+    else:  # put
         profit_loss = [max(float(k) - p, 0) - float(price) for p in price_range]
-    
+
     return {
         'labels': [float(p) for p in price_range],
-        'datasets': [{'label': 'Profit/Loss at Expiration', 'data': profit_loss, 'borderColor': ['rgba(255, 99, 132, 1)' if pl < 0 else 'rgba(75, 192, 192, 1)' for pl in profit_loss], 'backgroundColor': ['rgba(255, 99, 132, 0.2)' if pl < 0 else 'rgba(75, 192, 192, 0.2)' for pl in profit_loss], 'fill': False, 'tension': 0.1, }]
+        'datasets': [{
+            'label': 'Profit/Loss at Expiration',
+            'data': profit_loss,
+            'fill': False,
+            'tension': 0.1,
+        }],
+        'strikePrice': float(k),
+        'optionType': option_type
     }
 
 def binomial_american_option(s, k, t, r, sigma, option_type, steps=100):

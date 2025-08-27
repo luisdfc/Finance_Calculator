@@ -186,7 +186,7 @@
                                         <div class="flex justify-between"><span class="text-gray-400">Gamma:</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.gamma) }}</span></div>
                                         <div class="flex justify-between"><span class="text-gray-400">Theta (per day):</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.theta) }}</span></div>
                                         <div class="flex justify-between"><span class="text-gray-400">Vega (per 1%):</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.vega) }}</span></div>
-                                        <div class="flex justify-between col-span-2"><span class="text-gray-400">Rho (per 1%):</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.rho) }}</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-400">Rho (per 1%):</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.rho) }}</span></div>
                                     </div>
                                 </div>
                                 {% endif %}
@@ -279,43 +279,56 @@
                     <div>
                         <h2 class="text-2xl font-bold text-white mb-2">Advanced P/L Breakeven</h2>
                         <p class="text-gray-500 mb-6">Calculate the breakeven stock movement, accounting for time decay and volatility changes.</p>
-                        <div class="text-sm p-4 mb-6 bg-gray-900/60 rounded-lg border border-gray-700/60 text-gray-200 leading-relaxed">
-                            <strong class="text-white">Note:</strong>
-                            This breakeven is a <em>snapshot in time</em>. It assumes
-                            <span class="tooltip underline decoration-dotted underline-offset-2 cursor-help text-gray-100">
-                                Gamma
-                                <span class="tooltiptext max-w-md text-left">
-                                Gamma measures how quickly Delta changes as the stock moves (dΔ/dS). It’s highest near ATM and as expiry approaches—so it rarely stays constant.
+                        <div class="flex items-start gap-4 text-sm p-4 mb-6 bg-blue-900/20 rounded-lg border border-blue-500/30 text-blue-200 leading-relaxed">
+                            <div>
+                                <strong class="font-semibold text-white">A Note on Breakeven Calculation:</strong>
+                                This breakeven is a <em>snapshot in time</em> and assumes that
+                                <span class="tooltip underline decoration-dotted underline-offset-2 cursor-help text-white">
+                                    Gamma
+                                    <span class="tooltiptext max-w-md text-left bg-gray-800 border border-gray-600">
+                                    Gamma measures how quickly Delta changes as the stock moves (dΔ/dS). It’s highest near ATM and as expiry approaches—so it rarely stays constant.
+                                    </span>
                                 </span>
-                            </span>
-                            and
-                            <span class="tooltip underline decoration-dotted underline-offset-2 cursor-help text-gray-100">
-                                Vega
-                                <span class="tooltiptext max-w-md text-left">
-                                Vega is sensitivity to implied volatility. It varies with time to expiry and moneyness; treating it as fixed is only an approximation.
+                                and
+                                <span class="tooltip underline decoration-dotted underline-offset-2 cursor-help text-white">
+                                    Vega
+                                    <span class="tooltiptext max-w-md text-left bg-gray-800 border border-gray-600">
+                                    Vega is sensitivity to implied volatility. It varies with time to expiry and moneyness; treating it as fixed is only an approximation.
+                                    </span>
                                 </span>
-                            </span>
-                            remain constant.
-
-                            <!-- compact advanced tooltip button -->
-                            <button type="button"
+                                remain constant. For a deeper dive into dynamic hedging, see the advanced tooltip.
+                                
+                                <button
+                                    type="button"
                                     class="tooltip ml-2 inline-flex items-center justify-center w-6 h-6 align-middle rounded-full
-                                            bg-gray-800 text-gray-100 border border-gray-500 hover:bg-gray-700 hover:border-gray-300
-                                            focus:outline-none focus:ring-2 focus:ring-gray-400 cursor-help"
-                                    aria-label="Advanced: Gamma Scalping & Dynamic Hedging" tabindex="0">
-                                <span class="font-semibold text-xs">i</span>
-                                <span class="tooltiptext max-w-lg text-left">
-                                <span class="block font-semibold text-white mb-1">Advanced: Gamma Scalping &amp; Dynamic Hedging</span>
-                                <ul class="list-disc pl-5 space-y-1 text-gray-200">
-                                    <li>As price moves, Delta shifts ≈ <em>Gamma × ΔS</em>; re-hedging that shift can lock small P/L.</li>
-                                    <li>Higher Gamma (near-ATM, short-dated) → more frequent hedges → more costs/slippage.</li>
-                                    <li>Net P/L depends on realized vs. implied vol and transaction costs.</li>
-                                </ul>
-                                <span class="block mt-2 text-gray-300">
-                                    Our breakeven ignores re-hedging and assumes fixed Gamma/Vega—use it as a quick estimate, not a guarantee.
-                                </span>
-                                </span>
-                            </button>
+                                            text-blue-400 hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400/60
+                                            cursor-help transition-colors"
+                                    aria-label="Advanced: Gamma Scalping & Dynamic Hedging"
+                                    tabindex="0">
+                                    <!-- info icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="w-5 h-5 pointer-events-none"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                                        <line x1="12" y1="8"  x2="12.01" y2="8"></line>
+                                    </svg>
+
+                                    <!-- tooltip content -->
+                                    <span class="tooltiptext max-w-lg text-left bg-gray-800 border border-gray-600">
+                                        <span class="block font-semibold text-white mb-1">Advanced: Gamma Scalping &amp; Dynamic Hedging</span>
+                                        <ul class="list-disc pl-5 space-y-1 text-gray-200">
+                                        <li>As price moves, Delta shifts ≈ <em>Gamma × ΔS</em>; re-hedging that shift can lock small P/L.</li>
+                                        <li>Higher Gamma (near-ATM, short-dated) → more frequent hedges → more costs/slippage.</li>
+                                        <li>Net P/L depends on realized vs. implied vol and transaction costs.</li>
+                                        </ul>
+                                        <span class="block mt-2 text-gray-300">
+                                        Our breakeven ignores re-hedging and assumes fixed Gamma/Vega—use it as a quick estimate, not a guarantee.
+                                        </span>
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                         <form method="POST">
                             <input type="hidden" name="calculation_type" value="advanced_breakeven">
@@ -463,12 +476,12 @@
 
             try {
                 const chartData = JSON.parse(plChartDataJson);
-                const strikePrice = parseFloat(document.getElementById('k_bs').value);
-                const optionType = document.getElementById('option_type_bs').value;
+                const strikePrice = chartData.strikePrice;
+                const optionType = chartData.optionType;
                 const ctx = document.getElementById('plChart').getContext('2d');
 
                 if (charts.pl) charts.pl.destroy();
-                
+
                 charts.pl = new Chart(ctx, {
                     type: 'line',
                     data: chartData,
@@ -478,20 +491,33 @@
                         plugins: {
                             title: { display: true, text: 'Profit/Loss at Expiration', color: '#e0e0e0', font: { size: 16 } },
                             legend: { display: false },
-                            tooltip: { callbacks: { label: (c) => `P/L: ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(c.parsed.y)}`, title: (c) => `Stock Price: ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(c.parsed.x)}` } }
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    },
+                                    title: function(context) {
+                                        return 'Stock Price: ' + new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(context[0].parsed.x);
+                                    }
+                                }
+                            }
                         },
                         datasets: {
                             line: {
                                 tension: 0.1,
                                 fill: false,
+                                pointRadius: 0, // Add this line
                                 segment: {
                                     borderColor: ctx => {
-                                        const stockPrice = ctx.p0.parsed.x;
-                                        if (optionType === 'call') {
-                                            return stockPrice >= strikePrice ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)';
-                                        } else { // put
-                                            return stockPrice <= strikePrice ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)';
-                                        }
+                                        const profit = ctx.p1.parsed.y;
+                                        return profit >= 0 ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)';
                                     }
                                 }
                             }
@@ -543,6 +569,16 @@
         // Determine which tab to show on page load and render charts
         const lastCalculationType = '{{ result.type | default("expected_move") }}';
         switchTab(lastCalculationType);
+
+        // Use a timeout to ensure the tab panel is visible before rendering the chart
+        setTimeout(() => {
+            if (lastCalculationType === 'advanced_breakeven') {
+                renderBreakevenChart();
+            }
+            if (lastCalculationType === 'black_scholes') {
+                renderPlChart();
+            }
+        }, 100); // 100ms delay
         
     });
 </script>
