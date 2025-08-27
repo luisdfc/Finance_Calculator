@@ -23,7 +23,7 @@ A versatile tool that not only projects the future value of your investments but
 ---
 
 ### 2. 💰 DCA Strategy Optimizer
-Find your optimal **Dollar-Cost Averaging (DCA)** strategy. This calculator helps you balance commission costs against the benefits of averaging into a position by determining the ideal number of trades and the price-drop percentage that should trigger your next investment.
+An advanced tool to find your optimal **Dollar-Cost Averaging (DCA)** strategy. This calculator helps you balance commission costs by allowing you to set a custom **commission cap** (e.g., max 5% of capital for fees). It then determines the ideal number of trades and a price-drop percentage—based on the asset's volatility—that should trigger your next investment. The tool fully supports both **whole** and **fractional** share strategies, ensuring the plan is perfectly executable.
 
 ---
 
