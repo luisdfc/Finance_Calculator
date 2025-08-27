@@ -85,24 +85,45 @@
                                 <p class="text-gray-400">Ideal Price-Drop Trigger:</p>
                                 <p class="text-2xl font-bold text-indigo-400">{{ "{:.2%}".format(result.trigger_percentage) }}</p>
                             </div>
-                             <hr class="border-gray-700/50">
-                            <div class="flex justify-between items-baseline">
-                                <p class="text-gray-400">Total Shares to be Bought:</p>
-                                <p class="text-2xl font-bold text-indigo-400">
-                                    {% if result.share_type == 'whole' %}
-                                        {{ "{:,.0f}".format(result.total_shares_bought) }}
-                                    {% else %}
-                                        {{ "{:,.4f}".format(result.total_shares_bought) }} (fractional)
-                                    {% endif %}
-                                </p>
+                        </div>
+                        
+                        <div class="mt-8 bg-gray-900/50 p-6 rounded-lg">
+                            <h3 class="font-semibold text-white mb-4">Investment Breakdown</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-baseline">
+                                    <p class="text-gray-400">Total Shares to be Bought:</p>
+                                    <p class="text-lg font-medium text-gray-200">
+                                        {% if result.share_type == 'whole' %}
+                                            {{ "{:,.0f}".format(result.total_shares_bought) }}
+                                        {% else %}
+                                            {{ "{:,.4f}".format(result.total_shares_bought) }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="flex justify-between items-baseline">
+                                    <p class="text-gray-400">Total for Commissions:</p>
+                                    <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(result.total_commissions) }}</p>
+                                </div>
+                                <div class="flex justify-between items-baseline">
+                                    <p class="text-gray-400 font-bold">Total Capital Spent:</p>
+                                    <p class="text-lg font-bold text-indigo-400">€{{ "{:,.2f}".format(result.total_money_spent) }}</p>
+                                </div>
+                                <div class="flex justify-between items-baseline">
+                                    <p class="text-gray-400">Capital Left Over:</p>
+                                    <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(result.capital_leftover) }}</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="mt-8 bg-gray-900/50 p-6 rounded-lg">
+
+                        <div class="mt-6 bg-gray-900/50 p-6 rounded-lg">
                             <h3 class="font-semibold text-white mb-3">How to Implement This Strategy</h3>
                             <ol class="list-decimal list-inside text-gray-400 space-y-2">
-                                <li>Divide your capital into <strong class="text-gray-200">{{ result.optimal_trades }} parts</strong> of <strong class="text-gray-200">€{{ "{:,.2f}".format(result.cash_per_trade) }}</strong> each.</li>
+                                <li>This strategy involves <strong class="text-gray-200">{{ result.optimal_trades }} trades</strong>. Each trade will cost approximately <strong class="text-gray-200">€{{ "{:,.2f}".format(result.money_spent_per_trade) }}</strong> to buy <strong class="text-gray-200">
+                                    {% if result.share_type == 'whole' %}{{ "{:,.0f}".format(result.shares_per_trade) }}{% else %}{{ "{:,.4f}".format(result.shares_per_trade) }}{% endif %}
+                                    </strong> shares.
+                                </li>
                                 <li>Make your first purchase now at the current price.</li>
-                                <li>For subsequent purchases, buy every time the stock drops by <strong class="text-gray-200">{{ "{:.2%}".format(result.trigger_percentage) }}</strong> from your last purchase price.</li>
+                                <li>For subsequent purchases, execute a trade every time the stock drops by <strong class="text-gray-200">{{ "{:.2%}".format(result.trigger_percentage) }}</strong> from your last purchase price.</li>
                             </ol>
                         </div>
                     </div>
@@ -117,12 +138,13 @@
     </div>
     <div class="mt-8 bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
         <h2 class="text-2xl font-bold text-white mb-4">How It's Calculated</h2>
-        <p class="text-gray-400">The optimizer balances two constraints to find the ideal number of trades:</p>
-        <div class="mt-4 text-gray-400">
-            <p><strong class="text-white">1. Commission Cap:</strong> Ensures total commissions don't exceed 5% of your capital.</p>
-            <p><strong class="text-white">2. Trade Viability:</strong> Ensures each trade is large enough to buy at least one share (for whole shares) or is greater than the commission fee (for fractional shares).</p>
+        <p class="text-gray-400">The optimizer finds the ideal number of trades by balancing two key constraints to maximize efficiency:</p>
+        <div class="mt-4 text-gray-400 space-y-2">
+            <p><strong class="text-white">1. Commission Cap:</strong> It finds the maximum number of trades where total commission fees will not exceed 5% of your capital. This prevents fees from significantly eating into your investment.</p>
+            <p><strong class="text-white">2. Trade Viability:</strong> It ensures that each individual trade is large enough to be practical. For <strong class="text-white">whole shares</strong>, each trade must be able to afford at least one full share plus the commission. For <strong class="text-white">fractional shares</strong>, the amount invested per trade must simply be greater than the commission fee.</p>
+            <p><strong class="text-white">3. Divisibility (for Whole Shares):</strong> After finding the optimal number of trades, the calculator adjusts the <strong class="text-white">Total Shares to be Bought</strong> to ensure it is perfectly divisible by the number of trades. This guarantees every trade consists of a whole number of shares.</p>
         </div>
-        <p class="text-gray-400 mt-4">The price-drop trigger is then calculated based on the stock's volatility and the optimal number of trades:</p>
+        <p class="text-gray-400 mt-4">The price-drop trigger, which tells you when to make your next purchase, is then calculated using the asset's volatility:</p>
         <div class="mt-4 p-4 bg-gray-900/50 rounded-lg text-white font-mono text-sm overflow-x-auto">
             $$ \text{Trigger Percentage} = \frac{\text{Annualized Volatility}}{\sqrt{\text{Optimal Trades}}} $$
         </div>

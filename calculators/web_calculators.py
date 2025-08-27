@@ -208,14 +208,38 @@ class DCAOptimizerWebCalculator(WebCalculator):
             'total_capital': 1000,
             'share_price': 10,
             'commission_fee': 5,
-            'annualized_volatility': 0.60
+            'annualized_volatility': 0.60,
+            'share_type': 'whole'  # Added default value
         }
 
     def process_form_data(self, form):
-        fields = ['total_capital', 'share_price', 'commission_fee', 'annualized_volatility']
-        return self._process_simple_form(form, fields)
+        # This method now manually processes fields to include 'share_type'
+        form_data = form.to_dict()
+        processed_data = {}
+        error = None
+        
+        try:
+            # Process decimal fields
+            decimal_fields = ['total_capital', 'share_price', 'commission_fee', 'annualized_volatility']
+            for field in decimal_fields:
+                value = self._safe_decimal_conversion(form_data.get(field))
+                if value is None:
+                    return None, form_data, {"error": f"{field.replace('_', ' ').title()} must be a valid number."}
+                processed_data[field] = value
+            
+            # Process the share_type string field
+            share_type = form_data.get('share_type', 'whole')
+            if share_type not in ['whole', 'fractional']:
+                share_type = 'whole' # Default to 'whole' if invalid value
+            processed_data['share_type'] = share_type
+
+        except Exception:
+            error = {"error": "Invalid input. Please ensure all fields are filled correctly."}
+
+        return processed_data, form_data, error
 
     def calculate(self, processed_data):
+        # The 'share_type' is now in processed_data and will be passed to the calculator
         result = dca_optimizer.calculate_optimal_dca(**processed_data)
         if 'error' in result:
             return result
@@ -223,6 +247,8 @@ class DCAOptimizerWebCalculator(WebCalculator):
         for key in ['trigger_percentage', 'capital_per_trade']:
             if key in result and isinstance(result[key], Decimal):
                 result[key] = float(result[key])
+        
+        # We don't need to format total_shares_bought here, the template handles it
         return result
 
 class CapitalGainsWebCalculator(WebCalculator):

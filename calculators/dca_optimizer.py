@@ -17,65 +17,88 @@ def calculate_optimal_dca(total_capital, share_price, commission_fee, annualized
         return {"error": "Current Share Price must be a positive number."}
     if commission_fee < 0:
         return {"error": "Commission Fee per Trade cannot be negative."}
-    if annualized_volatility < 0:
-        return {"error": "Annualized Volatility cannot be negative."}
 
     # Constraint 1: Total commissions should not exceed 5% of total capital.
     if commission_fee > 0:
-        n_commission_cap = (Decimal('0.05') * total_capital) / commission_fee
-        n_commission_cap = math.floor(n_commission_cap)
+        n_commission_cap = math.floor((Decimal('0.05') * total_capital) / commission_fee)
     else:
-        n_commission_cap = Decimal('inf') 
+        n_commission_cap = float('inf') 
 
-    # Constraint 2: Each trade must be viable.
+    # Determine the maximum possible number of trades to start our search from.
     if share_type == 'whole':
-        # For whole shares, each trade must be large enough to buy at least one share.
         if (share_price + commission_fee) > 0:
-            n_viability_constraint = total_capital / (share_price + commission_fee)
-            n_viability_constraint = math.floor(n_viability_constraint)
+            max_possible_trades = math.floor(total_capital / (share_price + commission_fee))
         else:
-            n_viability_constraint = 0
+            max_possible_trades = 0
     else: # Fractional shares
-        # For fractional shares, each trade just needs to be larger than the commission.
         if commission_fee > 0:
-            n_viability_constraint = total_capital / commission_fee
+            max_possible_trades = n_commission_cap if n_commission_cap != float('inf') else 1000
         else:
-            # If no commission, this constraint is not a limiting factor for fractional shares
-            n_viability_constraint = Decimal('inf')
+            max_possible_trades = 1000
 
-    n_optimal = min(n_commission_cap, n_viability_constraint)
+    n_optimal = 0
+    # Iterate downwards to find the best number of trades
+    for n in range(int(max_possible_trades), 0, -1):
+        if n > n_commission_cap:
+            continue
 
-    if n_optimal <= 0:
+        cash_per_trade = total_capital / Decimal(n)
+        investable_cash_per_trade = cash_per_trade - commission_fee
+
+        if investable_cash_per_trade <= 0:
+            continue
+
+        if share_type == 'whole':
+            if investable_cash_per_trade >= share_price:
+                n_optimal = n
+                break 
+        else: # Fractional shares
+            n_optimal = n
+            break
+            
+    if n_optimal == 0:
         if share_type == 'whole':
             return {"error": f"Investment not feasible. You cannot afford one whole share (€{share_price:,.2f}) plus commission (€{commission_fee:,.2f}) with your capital."}
         else:
             return {"error": f"Investment not feasible. Your capital per trade would be less than the commission fee (€{commission_fee:,.2f})."}
-    
-    # This is the actionable amount of money to set aside for each trade.
-    cash_per_trade = total_capital / Decimal(n_optimal)
-    
-    # Calculate total shares that can be bought after accounting for all commissions
+
+    # --- Final Calculations based on n_optimal ---
     investable_capital = total_capital - (Decimal(n_optimal) * commission_fee)
+    
     if investable_capital <= 0:
         return {"error": f"Investment not feasible. Total commissions (€{Decimal(n_optimal) * commission_fee:,.2f}) would exceed your total capital."}
 
     total_shares_bought = investable_capital / share_price
+
     if share_type == 'whole':
         total_shares_bought = Decimal(math.floor(total_shares_bought))
+        if n_optimal > 0:
+            total_shares_bought = (total_shares_bought // n_optimal) * n_optimal
 
     if total_shares_bought <= 0:
-        return {"error": "Investment not feasible. After commissions, there is not enough capital to buy any shares."}
+         return {"error": "Investment not feasible. After commissions, there is not enough capital to buy any shares."}
 
-    # Ensure annualized_volatility is handled for n_optimal > 0 case
-    if n_optimal > 0:
-        optimal_percentage_drop = annualized_volatility / Decimal(math.sqrt(n_optimal))
-    else:
+    # New calculations for clarity
+    total_commissions = commission_fee * n_optimal
+    cost_of_shares = total_shares_bought * share_price
+    total_money_spent = cost_of_shares + total_commissions
+    money_spent_per_trade = total_money_spent / n_optimal
+    capital_leftover = total_capital - total_money_spent
+    shares_per_trade = total_shares_bought / n_optimal if n_optimal > 0 else 0
+
+    if annualized_volatility < 0:
         optimal_percentage_drop = Decimal('0')
+    else:
+        optimal_percentage_drop = annualized_volatility / Decimal(math.sqrt(n_optimal)) if n_optimal > 0 else Decimal('0')
 
     return {
         "optimal_trades": int(n_optimal),
         "trigger_percentage": optimal_percentage_drop,
-        "cash_per_trade": cash_per_trade,
         "total_shares_bought": total_shares_bought,
-        "share_type": share_type
+        "share_type": share_type,
+        "total_money_spent": total_money_spent,
+        "money_spent_per_trade": money_spent_per_trade,
+        "total_commissions": total_commissions,
+        "capital_leftover": capital_leftover,
+        "shares_per_trade": shares_per_trade
     }
