@@ -6,10 +6,12 @@
 <div class="max-w-6xl mx-auto">
     <div class="text-center mb-12 fade-in">
         <h1 class="text-4xl font-extrabold text-white">Options Strategy Calculator</h1>
-        <p class="text-gray-400 mt-2">Analyze trades with our options calculation tools.</p>
+        <p class="text-gray-400 mt-2">Analyze trades with our suite of powerful options calculation tools.</p>
     </div>
 
+    <!-- Expected Move & Sell vs Exercise -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Expected Move (keeps original tooltips) -->
         <div class="bg-gray-800/50 p-8 rounded-2xl fade-in">
             <h2 class="text-2xl font-bold text-white mb-2">Market's Expected Move</h2>
             <p class="text-gray-500 mb-6">Calculate the price swing the market expects, based on ATM straddle prices.</p>
@@ -51,30 +53,22 @@
             </form>
              {% if result and result.type == 'expected_move' %}
                 {% if result.error %}
-                     <div class="mt-6 bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg" role="alert">
-                        <p class="font-bold">Error</p><p>{{ result.error }}</p>
-                    </div>
+                    <div class="mt-6 bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg" role="alert"><p class="font-bold">Error</p><p>{{ result.error }}</p></div>
                 {% else %}
                 <div class="mt-6 bg-gray-900/50 p-6 rounded-lg">
                     <h3 class="font-semibold text-white mb-4">Expected Move Analysis</h3>
-                    <div class="text-center">
-                        <p class="text-gray-400">Expected Move (up or down):</p>
-                        <p class="text-3xl font-bold text-indigo-400 my-1">€{{ "{:,.2f}".format(result.expected_move) }}</p>
-                        <p class="text-gray-500 text-sm">({{ "{:.2%}".format(result.expected_percentage) }})</p>
-                    </div>
+                    <div class="text-center"><p class="text-gray-400">Expected Move (up or down):</p><p class="text-3xl font-bold text-indigo-400 my-1">€{{ "{:,.2f}".format(result.expected_move) }}</p><p class="text-gray-500 text-sm">({{ "{:.2%}".format(result.expected_percentage) }})</p></div>
                     <hr class="my-4 border-gray-700/50">
-                    <div class="text-sm text-center text-gray-400">
-                        <p>Implied Trading Range:</p>
-                        <p class="font-medium text-gray-200">€{{ "{:,.2f}".format(result.lower_bound) }} – €{{ "{:,.2f}".format(result.upper_bound) }}</p>
-                    </div>
+                    <div class="text-sm text-center text-gray-400"><p>Implied Trading Range:</p><p class="font-medium text-gray-200">€{{ "{:,.2f}".format(result.lower_bound) }} – €{{ "{:,.2f}".format(result.upper_bound) }}</p></div>
                 </div>
                 {% endif %}
             {% endif %}
         </div>
 
+        <!-- Sell vs. Exercise (keeps original tooltips + clarifies extrinsic value) -->
         <div class="bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
             <h2 class="text-2xl font-bold text-white mb-2">Sell vs. Exercise</h2>
-            <p class="text-gray-500 mb-6">Compare the profit from selling an option versus exercising it to see why selling is almost always better.</p>
+            <p class="text-gray-500 mb-6">Compare the profit from selling an option versus exercising it.</p>
             <form method="POST">
                 <input type="hidden" name="calculation_type" value="sell_vs_exercise">
                 <div class="space-y-4">
@@ -113,97 +107,99 @@
             </form>
              {% if result and result.type == 'sell_vs_exercise' %}
                  {% if result.error %}
-                     <div class="mt-6 bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg" role="alert">
-                        <p class="font-bold">Error</p><p>{{ result.error }}</p>
-                    </div>
+                     <div class="mt-6 bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg" role="alert"><p class="font-bold">Error</p><p>{{ result.error }}</p></div>
                  {% elif result.note %}
-                     <div class="mt-6 bg-blue-900/50 border border-blue-500/30 text-blue-300 p-4 rounded-lg" role="alert">
-                        <p class="font-bold">Note</p><p>{{ result.note }}</p>
-                    </div>
+                     <div class="mt-6 bg-blue-900/50 border border-blue-500/30 text-blue-300 p-4 rounded-lg" role="alert"><p class="font-bold">Note</p><p>{{ result.note }}</p></div>
                 {% else %}
                 <div class="mt-6 bg-gray-900/50 p-6 rounded-lg">
                     <h3 class="font-semibold text-white mb-4">Profit Comparison (per share)</h3>
-                     <div class="space-y-3">
-                        <div class="flex justify-between items-baseline">
-                            <p class="text-gray-400">Profit from Selling:</p>
-                            <p class="text-lg font-bold text-green-400">€{{ "{:,.2f}".format(result.profit_from_selling) }}</p>
-                        </div>
-                        <div class="flex justify-between items-baseline">
-                            <p class="text-gray-400">Profit from Exercising:</p>
-                            <p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(result.profit_from_exercising) }}</p>
-                        </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-baseline"><p class="text-gray-400">Profit from Selling:</p><p class="text-lg font-bold text-green-400">€{{ "{:,.2f}".format(result.profit_from_selling) }}</p></div>
+                        <div class="flex justify-between items-baseline"><p class="text-gray-400">Profit from Exercising:</p><p class="text-lg font-medium text-gray-200">€{{ "{:,.2f}".format(result.profit_from_exercising) }}</p></div>
                     </div>
                     <hr class="my-4 border-gray-700/50">
-                    <div class="text-center">
-                        <p class="text-gray-400">Extra profit by selling:</p>
-                        <p class="text-2xl font-bold text-indigo-400">€{{ "{:,.2f}".format(result.extrinsic_value) }}</p>
-                    </div>
+                    <div class="text-center"><p class="text-gray-400">Extra profit by selling (Extrinsic Value):</p><p class="text-2xl font-bold text-indigo-400">€{{ "{:,.2f}".format(result.extrinsic_value) }}</p></div>
                 </div>
                 {% endif %}
             {% endif %}
         </div>
     </div>
+
+    <!-- Option Pricing & Volatility (new block) -->
     <div class="mt-8 bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
-        <h2 class="text-2xl font-bold text-white mb-2">Option Pricing Model</h2>
-        <p class="text-gray-500 mb-6">Calculate the theoretical price of an option using industry-standard models.</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
+        <h2 class="text-2xl font-bold text-white mb-2">Option Pricing & Volatility</h2>
+        <p class="text-gray-500 mb-6">Calculate option prices, implied volatility, and historical IV rank.</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Pricing form -->
+            <div class="bg-gray-900/50 p-6 rounded-lg lg:col-span-1">
+                <h3 class="text-xl font-bold text-white mb-4">Option Pricing Model</h3>
                 <form method="POST">
                     <input type="hidden" name="calculation_type" value="black_scholes">
                     <div class="space-y-4">
-                         <div>
-                            <label for="style_bs" class="block text-sm font-medium text-gray-400">Option Style</label>
+                        <div><label for="style_bs" class="block text-sm font-medium text-gray-400">Option Style</label>
                             <select name="style_bs" id="style_bs" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <option value="european" {% if form_data.style_bs == 'european' %}selected{% endif %}>European (Black-Scholes)</option>
                                 <option value="american" {% if form_data.style_bs == 'american' %}selected{% endif %}>American (Binomial Tree)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="option_type_bs" class="block text-sm font-medium text-gray-400">Option Type</label>
+                            </select></div>
+                        <div><label for="option_type_bs" class="block text-sm font-medium text-gray-400">Option Type</label>
                             <select name="option_type_bs" id="option_type_bs" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <option value="call" {% if form_data.option_type_bs == 'call' %}selected{% endif %}>Call</option>
                                 <option value="put" {% if form_data.option_type_bs == 'put' %}selected{% endif %}>Put</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="s_bs" class="flex items-center text-sm font-medium text-gray-400">Stock Price (€)</label>
-                            <input type="number" name="s_bs" value="{{ form_data.s_bs | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="k_bs" class="flex items-center text-sm font-medium text-gray-400">Strike Price (€)</label>
-                            <input type="number" name="k_bs" value="{{ form_data.k_bs | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="t_bs" class="flex items-center text-sm font-medium text-gray-400">Time to Expiration (Days)</label>
-                            <input type="number" name="t_bs" value="{{ form_data.t_bs | default(90) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="r_bs" class="flex items-center text-sm font-medium text-gray-400">Risk-Free Rate (%)</label>
-                            <input type="number" name="r_bs" value="{{ form_data.r_bs | default(5) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="sigma_bs" class="flex items-center text-sm font-medium text-gray-400">Volatility (%)</label>
-                            <input type="number" name="sigma_bs" value="{{ form_data.sigma_bs | default(20) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="market_premium_bs" class="flex items-center text-sm font-medium text-gray-400">Market Premium (€) (Optional)</label>
-                            <input type="number" name="market_premium_bs" value="{{ form_data.market_premium_bs | default(5.0) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
+                            </select></div>
+                        <div><label for="s_bs" class="flex items-center text-sm font-medium text-gray-400">Stock Price (€)</label><input type="number" name="s_bs" value="{{ form_data.s_bs | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="k_bs" class="flex items-center text-sm font-medium text-gray-400">Strike Price (€)</label><input type="number" name="k_bs" value="{{ form_data.k_bs | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="t_bs" class="flex items-center text-sm font-medium text-gray-400">Time to Expiration (Days)</label><input type="number" name="t_bs" value="{{ form_data.t_bs | default(90) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="r_bs" class="flex items-center text-sm font-medium text-gray-400">Risk-Free Rate (%)</label><input type="number" name="r_bs" value="{{ form_data.r_bs | default(5) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="sigma_bs" class="flex items-center text-sm font-medium text-gray-400">Volatility (%)</label><input type="number" name="sigma_bs" value="{{ form_data.sigma_bs | default(20) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="market_premium_bs" class="flex items-center text-sm font-medium text-gray-400">Market Premium (€) (Optional)</label><input type="number" name="market_premium_bs" value="{{ form_data.market_premium_bs | default(5.0) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
                     </div>
                     <button type="submit" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 no-tap-highlight">Calculate Price</button>
                 </form>
             </div>
-            <div>
-            {% if result and result.type == 'black_scholes' %}
-                {% if result.error %}
-                    <div class="bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg h-full flex flex-col justify-center" role="alert">
-                        <p class="font-bold">Error</p>
-                        <p>{{ result.error }}</p>
+            <!-- IV + IV Rank side-by-side -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-900/50 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold text-white mb-4">Implied Volatility (IV) Analysis</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- IV form -->
+                        <form method="POST">
+                            <input type="hidden" name="calculation_type" value="implied_volatility">
+                            <p class="text-gray-400 mb-4 text-sm">Find the market's volatility expectation based on an option's price.</p>
+                            <div class="space-y-4">
+                                <div><label for="option_type_iv" class="block text-sm font-medium text-gray-400">Option Type</label><select name="option_type_iv" id="option_type_iv" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="call" {% if form_data.option_type_iv == 'call' %}selected{% endif %}>Call</option><option value="put" {% if form_data.option_type_iv == 'put' %}selected{% endif %}>Put</option></select></div>
+                                <div><label for="s_iv" class="flex items-center text-sm font-medium text-gray-400">Stock Price (€)</label><input type="number" name="s_iv" value="{{ form_data.s_iv | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                                <div><label for="k_iv" class="flex items-center text-sm font-medium text-gray-400">Strike Price (€)</label><input type="number" name="k_iv" value="{{ form_data.k_iv | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                                <div><label for="t_iv" class="flex items-center text-sm font-medium text-gray-400">Time to Expiration (Days)</label><input type="number" name="t_iv" value="{{ form_data.t_iv | default(90) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                                <div><label for="r_iv" class="flex items-center text-sm font-medium text-gray-400">Risk-Free Rate (%)</label><input type="number" name="r_iv" value="{{ form_data.r_iv | default(5) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                                <div><label for="market_premium_iv" class="flex items-center text-sm font-medium text-gray-400">Market Premium (€)</label><input type="number" name="market_premium_iv" value="{{ form_data.market_premium_iv | default(5.0) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                            </div>
+                            <button type="submit" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 no-tap-highlight">Calculate IV</button>
+                        </form>
+                        <!-- IV Rank form -->
+                        <form method="POST">
+                            <input type="hidden" name="calculation_type" value="iv_rank">
+                            <p class="text-gray-400 mb-4 text-sm">Calculate where the current IV stands relative to its 52-week range.</p>
+                            <div class="space-y-4">
+                                <div><label for="current_iv_rank" class="flex items-center text-sm font-medium text-gray-400">Current IV (%)</label><input type="number" name="current_iv_rank" value="{{ form_data.current_iv_rank | default(35) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                                <div><label for="iv_high_rank" class="flex items-center text-sm font-medium text-gray-400">52-Week IV High (%)</label><input type="number" name="iv_high_rank" value="{{ form_data.iv_high_rank | default(60) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                                <div><label for="iv_low_rank" class="flex items-center text-sm font-medium text-gray-400">52-Week IV Low (%)</label><input type="number" name="iv_low_rank" value="{{ form_data.iv_low_rank | default(20) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                            </div>
+                            <button type="submit" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 no-tap-highlight">Calculate IV Rank</button>
+                        </form>
                     </div>
-                {% else %}
-                    <div class="bg-gray-900/50 p-6 rounded-lg h-full">
-                        <h3 class="text-xl font-semibold text-white mb-4 text-center">Theoretical Option Price</h3>
-                        <p class="text-5xl font-bold text-indigo-400 text-center">€{{ "{:,.2f}".format(result.price) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unified results area for pricing/IV/IV Rank -->
+        <div class="mt-8">
+            {% if result and (result.type == 'black_scholes' or result.type == 'implied_volatility' or result.type == 'iv_rank') %}
+                {% if result.error %}
+                    <div class="bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg" role="alert"><p class="font-bold">Error</p><p>{{ result.error }}</p></div>
+                {% elif result.type == 'black_scholes' %}
+                    <div class="bg-gray-900/50 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold text-white mb-4 text-center">Option Pricing Results</h3>
+                        <p class="text-5xl font-bold text-indigo-400 text-center">€{{ "{:,.4f}".format(result.price) }}</p>
                         {% if result.valuation %}
                         <div class="mt-4 text-center">
                             <p class="text-lg font-semibold {% if result.valuation == 'Overvalued' %}text-red-400{% else %}text-green-400{% endif %}">{{ result.valuation }}</p>
@@ -212,95 +208,42 @@
                         {% endif %}
                         {% if result.greeks %}
                         <div class="mt-6">
-                            <h4 class="font-semibold text-white mb-2 text-center">Option Greeks</h4>
+                            <h4 class="font-semibold text-white mb-2 text-center">Option Greeks (European Only)</h4>
                             <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                                 <div class="flex justify-between"><span class="text-gray-400">Delta:</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.delta) }}</span></div>
                                 <div class="flex justify-between"><span class="text-gray-400">Gamma:</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.gamma) }}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">Theta:</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.theta) }}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-400">Vega:</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.vega) }}</span></div>
-                                <div class="flex justify-between col-span-2"><span class="text-gray-400">Rho:</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.rho) }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Theta (per day):</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.theta) }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Vega (per 1%):</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.vega) }}</span></div>
+                                <div class="flex justify-between col-span-2"><span class="text-gray-400">Rho (per 1%):</span> <span class="font-mono text-gray-200">{{ "%.4f"|format(result.greeks.rho) }}</span></div>
                             </div>
                         </div>
-                        <div class="mt-4">
-                            <canvas id="plChart"></canvas>
-                        </div>
+                        {% endif %}
+                        {% if result.pl_chart_data %}
+                        <div class="mt-4"><canvas id="plChart"></canvas></div>
                         {% endif %}
                     </div>
-                {% endif %}
-             {% else %}
-                <div class="bg-gray-900/50 p-6 rounded-lg h-full flex flex-col justify-center text-center">
-                     <h3 class="text-xl font-semibold text-white">Your results will appear here</h3>
-                    <p class="text-gray-500 mt-2">Fill out the form to calculate the theoretical option price.</p>
-                </div>
-            {% endif %}
-            </div>
-        </div>
-    </div>
-    <div class="mt-8 bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
-        <h2 class="text-2xl font-bold text-white mb-2">Implied Volatility Calculator</h2>
-        <p class="text-gray-500 mb-6">Work backward from the market price to find the implied volatility (IV).</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-                <form method="POST">
-                    <input type="hidden" name="calculation_type" value="implied_volatility">
-                    <div class="space-y-4">
-                        <div>
-                            <label for="option_type_iv" class="block text-sm font-medium text-gray-400">Option Type</label>
-                            <select name="option_type_iv" id="option_type_iv" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="call" {% if form_data.option_type_iv == 'call' %}selected{% endif %}>Call</option>
-                                <option value="put" {% if form_data.option_type_iv == 'put' %}selected{% endif %}>Put</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="s_iv" class="flex items-center text-sm font-medium text-gray-400">Stock Price (€)</label>
-                            <input type="number" name="s_iv" value="{{ form_data.s_iv | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="k_iv" class="flex items-center text-sm font-medium text-gray-400">Strike Price (€)</label>
-                            <input type="number" name="k_iv" value="{{ form_data.k_iv | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                         <div>
-                            <label for="t_iv" class="flex items-center text-sm font-medium text-gray-400">Time to Expiration (Days)</label>
-                            <input type="number" name="t_iv" value="{{ form_data.t_iv | default(90) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="r_iv" class="flex items-center text-sm font-medium text-gray-400">Risk-Free Rate (%)</label>
-                            <input type="number" name="r_iv" value="{{ form_data.r_iv | default(5) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="market_premium_iv" class="flex items-center text-sm font-medium text-gray-400">Market Premium (€)</label>
-                            <input type="number" name="market_premium_iv" value="{{ form_data.market_premium_iv | default(5.0) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
+                {% elif result.type == 'implied_volatility' %}
+                    <div class="bg-gray-900/50 p-6 rounded-lg text-center">
+                        <h3 class="text-xl font-semibold text-white mb-2">Implied Volatility (IV) Result</h3>
+                        <p class="text-5xl font-bold text-indigo-400 my-2">{{ "{:.2%}".format(result.implied_volatility) }}</p>
+                        <p class="text-gray-400 max-w-md mx-auto">{{ result.explanation }}</p>
                     </div>
-                    <button type="submit" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 no-tap-highlight">Calculate IV</button>
-                </form>
-            </div>
-             <div>
-            {% if result and result.type == 'implied_volatility' %}
-                {% if result.error %}
-                    <div class="bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg h-full flex flex-col justify-center" role="alert">
-                        <p class="font-bold">Error</p>
-                        <p>{{ result.error }}</p>
-                    </div>
-                {% else %}
-                    <div class="bg-gray-900/50 p-6 rounded-lg h-full flex flex-col justify-center text-center">
-                        <h3 class="text-xl font-semibold text-white mb-4">Implied Volatility (IV)</h3>
-                        <p class="text-5xl font-bold text-indigo-400">{{ "{:.2%}".format(result.implied_volatility) }}</p>
+                {% elif result.type == 'iv_rank' %}
+                    <div class="bg-gray-900/50 p-6 rounded-lg text-center">
+                        <h3 class="text-xl font-semibold text-white mb-2">IV Rank Result</h3>
+                        <p class="text-5xl font-bold text-indigo-400 my-2">{{ "{:.1%}".format(result.iv_rank) }}</p>
+                        <p class="text-gray-400 max-w-md mx-auto">{{ result.explanation }}</p>
                     </div>
                 {% endif %}
-             {% else %}
-                <div class="bg-gray-900/50 p-6 rounded-lg h-full flex flex-col justify-center text-center">
-                     <h3 class="text-xl font-semibold text-white">Your IV result will appear here</h3>
-                    <p class="text-gray-500 mt-2">Fill out the form to calculate the implied volatility.</p>
-                </div>
             {% endif %}
-            </div>
         </div>
     </div>
+
+    <!-- Advanced Breakeven -->
     <div class="mt-8 bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
         <h2 class="text-2xl font-bold text-white mb-2">Advanced P/L Breakeven</h2>
-        <p class="text-gray-500 mb-6">Calculate the breakeven stock movement for an options trade and see a summary plot.</p>
-         <div class="text-sm p-4 mb-6 bg-gray-900/50 rounded-lg border border-gray-700/50 text-gray-400">
+        <p class="text-gray-500 mb-6">Calculate the breakeven stock movement for a trade, accounting for time decay and volatility changes.</p>
+        <div class="text-sm p-4 mb-6 bg-gray-900/50 rounded-lg border border-gray-700/50 text-gray-400">
             <strong>Note:</strong> This calculation assumes that Gamma and Vega remain constant over the holding period, which is an approximation. For longer holding periods or large moves in the underlying, these values will change.
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -308,61 +251,15 @@
                 <form method="POST">
                     <input type="hidden" name="calculation_type" value="advanced_breakeven">
                     <div class="space-y-4">
-                        <div>
-                            <label for="option_type_adv" class="block text-sm font-medium text-gray-400">Option Type</label>
-                            <select name="option_type_adv" id="option_type_adv" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="call" {% if form_data.option_type_adv == 'call' %}selected{% endif %}>Call</option>
-                                <option value="put" {% if form_data.option_type_adv == 'put' %}selected{% endif %}>Put</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="current_stock_price_adv" class="flex items-center text-sm font-medium text-gray-400">
-                                Current Stock Price (€)
-                            </label>
-                            <input type="number" name="current_stock_price_adv" value="{{ form_data.current_stock_price_adv | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="delta_adv" class="flex items-center text-sm font-medium text-gray-400">
-                                Delta
-                            </label>
-                            <input type="number" name="delta_adv" value="{{ form_data.delta_adv | default(0.5) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="gamma_adv" class="flex items-center text-sm font-medium text-gray-400">
-                                Gamma
-                            </label>
-                            <input type="number" name="gamma_adv" value="{{ form_data.gamma_adv | default(0.08) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="theta_adv" class="flex items-center text-sm font-medium text-gray-400">
-                                Theta
-                            </label>
-                            <input type="number" name="theta_adv" value="{{ form_data.theta_adv | default(-0.05) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="vega_adv" class="flex items-center text-sm font-medium text-gray-400">
-                                Vega
-                            </label>
-                            <input type="number" name="vega_adv" value="{{ form_data.vega_adv | default(0.12) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="bid_ask_spread_adv" class="flex items-center text-sm font-medium text-gray-400">
-                                Bid-Ask Spread (€)
-                            </label>
-                            <input type="number" name="bid_ask_spread_adv" value="{{ form_data.bid_ask_spread_adv | default(0.05) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="expected_iv_change_adv" class="flex items-center text-sm font-medium text-gray-400">
-                                Expected IV Change (%)
-                            </label>
-                            <input type="number" name="expected_iv_change_adv" value="{{ form_data.expected_iv_change_adv | default(-2) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
-                        <div>
-                            <label for="days_to_hold_adv" class="flex items-center text-sm font-medium text-gray-400">
-                                Days to Hold
-                            </label>
-                            <input type="number" name="days_to_hold_adv" value="{{ form_data.days_to_hold_adv | default(10) }}" step="1" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        </div>
+                        <div><label for="option_type_adv" class="block text-sm font-medium text-gray-400">Option Type</label><select name="option_type_adv" id="option_type_adv" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="call" {% if form_data.option_type_adv == 'call' %}selected{% endif %}>Call</option><option value="put" {% if form_data.option_type_adv == 'put' %}selected{% endif %}>Put</option></select></div>
+                        <div><label for="current_stock_price_adv" class="flex items-center text-sm font-medium text-gray-400">Current Stock Price (€)</label><input type="number" name="current_stock_price_adv" value="{{ form_data.current_stock_price_adv | default(100) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="delta_adv" class="flex items-center text-sm font-medium text-gray-400">Delta</label><input type="number" name="delta_adv" value="{{ form_data.delta_adv | default(0.5) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="gamma_adv" class="flex items-center text-sm font-medium text-gray-400">Gamma</label><input type="number" name="gamma_adv" value="{{ form_data.gamma_adv | default(0.08) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="theta_adv" class="flex items-center text-sm font-medium text-gray-400">Theta</label><input type="number" name="theta_adv" value="{{ form_data.theta_adv | default(-0.05) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="vega_adv" class="flex items-center text-sm font-medium text-gray-400">Vega</label><input type="number" name="vega_adv" value="{{ form_data.vega_adv | default(0.12) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="bid_ask_spread_adv" class="flex items-center text-sm font-medium text-gray-400">Bid-Ask Spread (€)</label><input type="number" name="bid_ask_spread_adv" value="{{ form_data.bid_ask_spread_adv | default(0.05) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="expected_iv_change_adv" class="flex items-center text-sm font-medium text-gray-400">Expected IV Change (%)</label><input type="number" name="expected_iv_change_adv" value="{{ form_data.expected_iv_change_adv | default(-2) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
+                        <div><label for="days_to_hold_adv" class="flex items-center text-sm font-medium text-gray-400">Days to Hold</label><input type="number" id="days_to_hold_input" name="days_to_hold_adv" value="{{ form_data.days_to_hold_adv | default(10) }}" step="1" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div>
                     </div>
                     <button type="submit" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 no-tap-highlight">Calculate Breakeven</button>
                 </form>
@@ -370,57 +267,31 @@
             <div>
             {% if result and result.type == 'advanced_breakeven' %}
                 {% if result.error %}
-                    <div class="bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg h-full flex flex-col justify-center" role="alert">
-                        <p class="font-bold">Error</p>
-                        <p>{{ result.error }}</p>
-                    </div>
+                    <div class="bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg h-full flex flex-col justify-center" role="alert"><p class="font-bold">Error</p><p>{{ result.error }}</p></div>
                 {% else %}
                     <div class="bg-gray-900/50 p-6 rounded-lg h-full">
                         <h3 class="text-xl font-semibold text-white mb-4 text-center">Breakeven Analysis</h3>
-                        <div class="text-center">
-                             <p class="text-gray-400">Required Stock Price Move:</p>
-                             <p class="text-4xl font-bold text-indigo-400 my-1">€{{ "{:,.2f}".format(result.required_move) }}</p>
-                             <p class="text-gray-500 text-lg">({{ "{:,.2f}".format(result.percent_move) }}%)</p>
-                        </div>
-                         <hr class="my-4 border-gray-700/50">
-                         <div class="text-center mb-4">
-                            <p class="text-gray-400">Target Stock Price:</p>
-                            <p class="text-3xl font-bold text-gray-200">€{{ "{:,.2f}".format(result.target_price) }}</p>
-                        </div>
+                        <div class="text-center"><p class="text-gray-400">Required Stock Price Move:</p><p class="text-4xl font-bold text-indigo-400 my-1">€{{ "{:,.2f}".format(result.required_move) }}</p><p class="text-gray-500 text-lg">({{ "{:,.2f}".format(result.percent_move) }}%)</p></div>
+                        <hr class="my-4 border-gray-700/50">
+                        <div class="text-center mb-4"><p class="text-gray-400">Target Stock Price:</p><p class="text-3xl font-bold text-gray-200">€{{ "{:,.2f}".format(result.target_price) }}</p></div>
                         <div class="space-y-2 text-sm">
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">Time Decay (Theta) Cost:</span>
-                                <span class="font-medium text-red-400">€{{ "{:,.2f}".format(result.total_theta_decay) }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">IV Change (Vega) Impact:</span>
-                                <span class="font-medium {% if result.total_vega_impact >= 0 %}text-green-400{% else %}text-red-400{% endif %}">€{{ "{:,.2f}".format(result.total_vega_impact) }}</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">Bid-Ask Spread Cost:</span>
-                                <span class="font-medium text-red-400">€{{ "{:,.2f}".format(result.bid_ask_spread_cost) }}</span>
-                            </div>
+                            <div class="flex justify-between"><span class="text-gray-400">Time Decay (Theta) Cost:</span><span class="font-medium text-red-400">€{{ "{:,.2f}".format(result.total_theta_decay) }}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">IV Change (Vega) Impact:</span><span class="font-medium {% if result.total_vega_impact >= 0 %}text-green-400{% else %}text-red-400{% endif %}">€{{ "{:,.2f}".format(result.total_vega_impact) }}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-400">Bid-Ask Spread Cost:</span><span class="font-medium text-red-400">€{{ "{:,.2f}".format(result.bid_ask_spread_cost) }}</span></div>
                             <hr class="my-2 border-gray-700/50">
-                            <div class="flex justify-between font-bold">
-                                <span class="text-gray-300">Total Headwind:</span>
-                                <span class="text-white">€{{ "{:,.2f}".format(result.total_headwind) }}</span>
-                            </div>
+                            <div class="flex justify-between font-bold"><span class="text-gray-300">Total Headwind:</span><span class="text-white">€{{ "{:,.2f}".format(result.total_headwind) }}</span></div>
                         </div>
-                        <div class="mt-4">
-                            <canvas id="breakevenChart"></canvas>
-                        </div>
+                        <div class="mt-4"><canvas id="breakevenChart"></canvas></div>
                     </div>
                 {% endif %}
             {% else %}
-                <div class="bg-gray-900/50 p-6 rounded-lg h-full flex flex-col justify-center text-center">
-                     <h3 class="text-xl font-semibold text-white">Your results will appear here</h3>
-                    <p class="text-gray-500 mt-2">Fill out the form to calculate your breakeven price.</p>
-                </div>
+                <div class="bg-gray-900/50 p-6 rounded-lg h-full flex flex-col justify-center text-center"><h3 class="text-xl font-semibold text-white">Your results will appear here</h3><p class="text-gray-500 mt-2">Fill out the form to calculate your breakeven price.</p></div>
             {% endif %}
             </div>
         </div>
     </div>
 
+    <!-- How It's Calculated (preserve original formulas + add IV Rank & American model notes) -->
     <div class="mt-8 bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
         <h2 class="text-2xl font-bold text-white mb-4">How It's Calculated</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -440,16 +311,23 @@
                 </div>
             </div>
             <div class="md:col-span-2">
-                <h3 class="text-xl font-semibold text-white mb-2">Black-Scholes Model</h3>
-                <p class="text-gray-400">The Black-Scholes formula is used to calculate the theoretical price of European-style options. It considers the stock price, strike price, time to expiration, risk-free rate, and volatility.</p>
+                <h3 class="text-xl font-semibold text-white mb-2">Option Pricing Models</h3>
+                <p class="text-gray-400">For <strong class="text-white">European</strong> options, the <strong class="text-white">Black-Scholes model</strong> calculates a theoretical price. For <strong class="text-white">American</strong> options, we use the <strong class="text-white">Binomial Tree model</strong>, which accounts for the possibility of early exercise.</p>
                 <div class="mt-4 p-4 bg-gray-900/50 rounded-lg text-white font-mono text-sm overflow-x-auto">
                     $$ C(S, t) = N(d_1)S - N(d_2)Ke^{-r(T-t)} $$
                     $$ P(S, t) = N(-d_2)Ke^{-r(T-t)} - N(-d_1)S $$
                 </div>
             </div>
             <div class="md:col-span-2">
+                <h3 class="text-xl font-semibold text-white mb-2">Implied Volatility (IV) & IV Rank</h3>
+                <p class="text-gray-400"><strong class="text-white">Implied Volatility</strong> is calculated by reverse-engineering the Black-Scholes model from the option's market price. <strong class="text-white">IV Rank</strong> contextualizes this by measuring where the current IV sits within its 52‑week high/low range.</p>
+                <div class="mt-4 p-4 bg-gray-900/50 rounded-lg text-white font-mono text-sm overflow-x-auto">
+                    $$ \text{IV Rank} = \frac{\text{Current IV} - \text{IV Low}}{\text{IV High} - \text{IV Low}} $$
+                </div>
+            </div>
+            <div class="md:col-span-2">
                 <h3 class="text-xl font-semibold text-white mb-2">Advanced Breakeven</h3>
-                <p class="text-gray-400">The advanced breakeven is calculated using a second-order Taylor expansion of the option's price, incorporating the Greeks to model the change in value.</p>
+                <p class="text-gray-400">The advanced breakeven is calculated using a second-order Taylor expansion of the option's price, incorporating the Greeks to model the change in value and a total headwind from theta, vega and transaction costs.</p>
                 <div class="mt-4 p-4 bg-gray-900/50 rounded-lg text-white font-mono text-sm overflow-x-auto">
                     $$ \Delta P \approx \Delta S \cdot \frac{\partial P}{\partial S} + \frac{1}{2} (\Delta S)^2 \cdot \frac{\partial^2 P}{\partial S^2} $$
                     $$ \text{Total Headwind} = \text{Theta} + \text{Vega} + \text{Spread} $$
@@ -462,6 +340,7 @@
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const breakevenChartDataJson = '{{ result.chart_data | tojson | safe if result and result.type == "advanced_breakeven" and result.chart_data else "" }}';
@@ -470,6 +349,8 @@
         if (breakevenChartDataJson) {
             try {
                 const chartData = JSON.parse(breakevenChartDataJson);
+                const daysToHoldEl = document.getElementById('days_to_hold_input');
+                const daysToHold = daysToHoldEl ? daysToHoldEl.value : undefined;
                 const ctx = document.getElementById('breakevenChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'line',
@@ -479,34 +360,22 @@
                         plugins: {
                             title: { display: true, text: 'Required Stock Movement vs. Holding Period', color: '#e0e0e0', font: { size: 16 } },
                             legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) { label += ': '; }
-                                        if (context.parsed.y !== null) {
-                                            label += new Intl.NumberFormat('de-DE', { style: 'percent', minimumFractionDigits: 2 }).format(context.parsed.y / 100);
-                                        }
-                                        return label;
-                                    },
-                                    title: function(context) { return 'Holding Period: ' + context[0].label + ' days'; }
-                                }
-                            }
+                            tooltip: { callbacks: { label: (c) => `Required Move: ${new Intl.NumberFormat('de-DE', { style: 'percent', minimumFractionDigits: 2 }).format(c.parsed.y / 100)}`, title: (c) => `Holding Period: ${c[0].label} days` } },
+                            annotation: daysToHold ? { annotations: { line1: { type: 'line', xMin: daysToHold, xMax: daysToHold, borderColor: 'rgba(255, 99, 132, 0.8)', borderWidth: 2, borderDash: [6, 6], label: { content: `Your Holding Period (${daysToHold} days)`, enabled: true, position: 'start', yAdjust: -10 } } } } : {}
                         },
                         scales: {
                             x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af' }, title: { display: true, text: 'Holding Period (Days)', color: '#9ca3af' } },
-                            y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af', callback: function(value) { return new Intl.NumberFormat('de-DE', { style: 'percent', minimumFractionDigits: 0 }).format(value / 100); } }, title: { display: true, text: 'Required Stock Movement (%)', color: '#9ca3af' } }
+                            y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af', callback: (v) => new Intl.NumberFormat('de-DE', { style: 'percent', minimumFractionDigits: 0 }).format(v/100) }, title: { display: true, text: 'Required Stock Movement (%)', color: '#9ca3af' } }
                         }
                     }
                 });
-            } catch (e) {
-                console.error("Failed to parse breakeven chart data:", e);
-            }
+            } catch (e) { console.error('Failed to parse breakeven chart data:', e); }
         }
 
         if (plChartDataJson) {
             try {
                 const chartData = JSON.parse(plChartDataJson);
+                if(chartData?.datasets?.[0]){const isCall='{{ form_data.option_type_bs|default("call") }}'==='call',S=+('{{ form_data.s_bs|default(100) }}'),K=+('{{ form_data.k_bs|default(100) }}'),isITM=isCall?S>K:S<K;if(isITM){Object.assign(chartData.datasets[0],{borderColor:'#22c55e',pointBackgroundColor:'#22c55e',pointBorderColor:'#22c55e',segment:{borderColor:'#22c55e'}});}}
                 const ctx = document.getElementById('plChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'line',
@@ -516,22 +385,15 @@
                         plugins: {
                             title: { display: true, text: 'Profit/Loss at Expiration', color: '#e0e0e0', font: { size: 16 } },
                             legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) { return 'P/L: ' + new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(context.parsed.y); },
-                                    title: function(context) { return 'Stock Price: ' + new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(context[0].label); }
-                                }
-                            }
+                            tooltip: { callbacks: { label: (c) => `P/L: ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(c.parsed.y)}`, title: (c) => `Stock Price: ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(c[0].label)}` } }
                         },
                         scales: {
-                            x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af', callback: function(value) { return '€' + this.getLabelForValue(value); } }, title: { display: true, text: 'Stock Price at Expiration', color: '#9ca3af' } },
-                            y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af', callback: function(value) { return '€' + value; } }, title: { display: true, text: 'Profit / Loss', color: '#9ca3af' } }
+                            x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af', callback: function(v) { return '€' + this.getLabelForValue(v) } }, title: { display: true, text: 'Stock Price at Expiration', color: '#9ca3af' } },
+                            y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af', callback: (v) => '€' + v }, title: { display: true, text: 'Profit / Loss', color: '#9ca3af' } }
                         }
                     }
                 });
-            } catch (e) {
-                console.error("Failed to parse P/L chart data:", e);
-            }
+            } catch (e) { console.error('Failed to parse P/L chart data:', e); }
         }
     });
 </script>

@@ -4,42 +4,35 @@ import numpy as np
 from scipy.stats import norm
 
 # Set precision for Decimal calculations
-getcontext().prec = 28 # Increased precision for complex math
+getcontext().prec = 28
 
 def _erf_decimal(x):
     """
-    A Decimal-compatible implementation of the error function (erf),
-    using the Abramowitz and Stegun approximation. This is a robust way
-    to handle the erf calculation without a native Decimal implementation.
+    A Decimal-compatible implementation of the error function (erf).
     """
-    # Constants for the approximation
     a1 = Decimal('0.254829592')
     a2 = Decimal('-0.284496736')
     a3 = Decimal('1.421413741')
     a4 = Decimal('-1.453152027')
     a5 = Decimal('1.061405429')
-    p = Decimal('0.3275911')
-
+    p  = Decimal('0.3275911')
     sign = Decimal('1')
     if x < 0:
         sign = Decimal('-1')
     x = abs(x)
-
     t = Decimal('1.0') / (Decimal('1.0') + p * x)
     y = Decimal('1.0') - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * (-x * x).exp()
     return sign * y
 
 def _norm_cdf_decimal(x):
     """
-    A Decimal-compatible implementation of the cumulative distribution function for
-    the standard normal distribution, now using our custom _erf_decimal function.
+    Decimal-compatible cumulative distribution function for the standard normal distribution.
     """
     return Decimal('0.5') * (Decimal('1') + _erf_decimal(x / Decimal('2').sqrt()))
 
 def _norm_pdf_decimal(x):
     """
-    A Decimal-compatible implementation of the probability density function for
-    the standard normal distribution.
+    Decimal-compatible probability density function for the standard normal distribution.
     """
     pi = Decimal(math.pi)
     return (-(x**2 / Decimal('2'))).exp() / (Decimal('2') * pi).sqrt()
@@ -55,12 +48,10 @@ def calculate_expected_move(stock_price, call_price, put_price):
         return {"error": "ATM Call Option Price cannot be negative."}
     if put_price < 0:
         return {"error": "ATM Put Option Price cannot be negative."}
-
     expected_move = call_price + put_price
     expected_percentage = (expected_move / stock_price) if stock_price > 0 else Decimal('0')
     upper_bound = stock_price + expected_move
     lower_bound = stock_price - expected_move
-
     return {
         "expected_move": expected_move,
         "expected_percentage": expected_percentage,
@@ -80,21 +71,34 @@ def compare_sell_vs_exercise(stock_price, strike_price, option_premium):
         return {"error": "Option Premium cannot be negative."}
     if stock_price <= strike_price:
         return {"note": "This calculation is for an in-the-money call option (stock price > strike price). If the stock price is less than or equal to the strike price, the option has no intrinsic value to exercise for a call."}
-
     profit_from_selling = option_premium
     intrinsic_value = stock_price - strike_price
     profit_from_exercising = intrinsic_value
     extrinsic_value = option_premium - intrinsic_value
-
     return {
         "profit_from_selling": profit_from_selling,
         "profit_from_exercising": profit_from_exercising,
         "extrinsic_value": extrinsic_value
     }
+
+def _calculate_pl_chart(s, k, price, option_type):
+    """
+    Generates the P/L chart data for an option.
+    """
+    price_range = np.linspace(float(s) * 0.7, float(s) * 1.3, 100)
+    if option_type == 'call':
+        profit_loss = [max(p - float(k), 0) - float(price) for p in price_range]
+    else: # put
+        profit_loss = [max(float(k) - p, 0) - float(price) for p in price_range]
     
+    return {
+        'labels': [float(p) for p in price_range],
+        'datasets': [{'label': 'Profit/Loss at Expiration', 'data': profit_loss, 'borderColor': ['rgba(255, 99, 132, 1)' if pl < 0 else 'rgba(75, 192, 192, 1)' for pl in profit_loss], 'backgroundColor': ['rgba(255, 99, 132, 0.2)' if pl < 0 else 'rgba(75, 192, 192, 0.2)' for pl in profit_loss], 'fill': False, 'tension': 0.1, }]
+    }
+
 def binomial_american_option(s, k, t, r, sigma, option_type, steps=100):
     """
-    Calculates the price of an American option using the Binomial Tree model, now with Decimal precision.
+    Calculates the price of an American option using the Binomial Tree model.
     """
     if s <= 0 or k <= 0 or t <= 0 or sigma <= 0:
         return {'error': 'All inputs must be positive values for the Binomial model.'}
@@ -112,7 +116,7 @@ def binomial_american_option(s, k, t, r, sigma, option_type, steps=100):
 
     if option_type == 'call':
         option_values = [max(price - k, Decimal('0')) for price in st]
-    else: # put
+    else:
         option_values = [max(k - price, Decimal('0')) for price in st]
 
     for i in range(steps - 1, -1, -1):
@@ -121,15 +125,17 @@ def binomial_american_option(s, k, t, r, sigma, option_type, steps=100):
             st_price = s * (u ** (i - j)) * (d ** j)
             if option_type == 'call':
                 option_values[j] = max(option_values[j], st_price - k)
-            else: # put
+            else:
                 option_values[j] = max(option_values[j], k - st_price)
 
-    return {'price': option_values[0]}
-
+    price = option_values[0]
+    result = {'price': price}
+    result['pl_chart_data'] = _calculate_pl_chart(s, k, price, option_type)
+    return result
 
 def calculate_black_scholes(s, k, t, r, sigma, option_type, market_premium=None, style='european'):
     """
-    Calculates the theoretical price of an option and its Greeks with Decimal precision.
+    Calculates the theoretical price of an option and its Greeks.
     """
     if style == 'american':
         return binomial_american_option(s, k, t, r, sigma, option_type)
@@ -172,28 +178,21 @@ def calculate_black_scholes(s, k, t, r, sigma, option_type, market_premium=None,
             result['valuation'] = 'Undervalued'
             result['difference'] = price - market_premium
 
-    price_range = np.linspace(float(s) * 0.7, float(s) * 1.3, 100)
-    if option_type == 'call':
-        profit_loss = [max(p - float(k), 0) - float(price) for p in price_range]
-    else:
-        profit_loss = [max(float(k) - p, 0) - float(price) for p in price_range]
-    
-    result['pl_chart_data'] = {
-        'labels': [float(p) for p in price_range],
-        'datasets': [{'label': 'Profit/Loss at Expiration', 'data': profit_loss, 'borderColor': ['rgba(255, 99, 132, 1)' if pl < 0 else 'rgba(75, 192, 192, 1)' for pl in profit_loss], 'backgroundColor': ['rgba(255, 99, 132, 0.2)' if pl < 0 else 'rgba(75, 192, 192, 0.2)' for pl in profit_loss], 'fill': False, 'tension': 0.1, }]
-    }
+    result['pl_chart_data'] = _calculate_pl_chart(s, k, price, option_type)
     return result
 
 def calculate_implied_volatility(s, k, t, r, market_premium, option_type, style='european'):
     """
-    Calculates the implied volatility using a binary search (bisection) method.
+    Calculates the implied volatility and provides an explanatory text.
     """
     low_vol = Decimal('0.001')
     high_vol = Decimal('5.0')
     
     for i in range(100):
         mid_vol = (low_vol + high_vol) / 2
-        price_at_mid_vol = calculate_black_scholes(s, k, t, r, mid_vol * 100, option_type, style=style)['price']
+        price_at_mid_vol_result = calculate_black_scholes(s, k, t, r, mid_vol * 100, option_type, style=style)
+        if 'error' in price_at_mid_vol_result: return price_at_mid_vol_result
+        price_at_mid_vol = price_at_mid_vol_result['price']
         
         if price_at_mid_vol < market_premium:
             low_vol = mid_vol
@@ -204,7 +203,41 @@ def calculate_implied_volatility(s, k, t, r, market_premium, option_type, style=
             break
             
     implied_vol = (low_vol + high_vol) / 2
-    return {'implied_volatility': implied_vol}
+    explanation = f"An Implied Volatility of {implied_vol:.2%} suggests that the market expects the stock to have an annualized price swing of this magnitude. A high IV indicates expectations of large price movements (making options more expensive), while a low IV suggests the market expects the price to be more stable."
+
+    return {
+        'implied_volatility': implied_vol,
+        'explanation': explanation
+    }
+
+def calculate_iv_rank(current_iv, iv_high, iv_low):
+    """
+    Calculates the IV Rank and provides a contextual explanation.
+    """
+    if not (iv_low < current_iv < iv_high):
+        return {"error": "Current IV must be between the 52-week high and low."}
+    if iv_high <= iv_low:
+        return {"error": "52-week high must be greater than the 52-week low."}
+    
+    iv_rank = (current_iv - iv_low) / (iv_high - iv_low)
+    
+    if iv_rank < Decimal('0.2'):
+        disposition = "very low. This may suggest that option premiums are relatively cheap, favoring buying strategies."
+    elif iv_rank < Decimal('0.4'):
+        disposition = "low. Option premiums may be considered inexpensive."
+    elif iv_rank <= Decimal('0.6'):
+        disposition = "neutral. Option premiums are neither particularly cheap nor expensive."
+    elif iv_rank <= Decimal('0.8'):
+        disposition = "high. Option premiums may be considered expensive, favoring selling strategies."
+    else:
+        disposition = "very high. This may suggest that option premiums are relatively expensive, strongly favoring selling strategies."
+
+    explanation = f"With an IV Rank of {iv_rank:.1%}, the current Implied Volatility is {disposition}"
+    
+    return {
+        'iv_rank': iv_rank,
+        'explanation': explanation
+    }
 
 def calculate_advanced_breakeven(inputs):
     """
@@ -215,12 +248,10 @@ def calculate_advanced_breakeven(inputs):
         if key not in inputs:
             return {"error": f"Missing required input: {key}"}
     
-    # Specific validations for values
     if inputs['gamma'] <= 0: return {"error": "Gamma must be a positive value."}
     if inputs['theta'] > 0: return {"error": "Theta must be a negative value for long options."}
     if inputs['days_to_hold'] <= 0: return {"error": "Days to Hold must be a positive number."}
 
-    # Convert to float for numpy/math operations after validation
     for key, value in inputs.items():
         if isinstance(value, Decimal):
             inputs[key] = float(value)
