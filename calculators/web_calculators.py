@@ -209,22 +209,23 @@ class DCAOptimizerWebCalculator(WebCalculator):
             'share_price': 10,
             'commission_fee': 5,
             'annualized_volatility': 0.60,
-            'share_type': 'whole'  # Added default value
+            'share_type': 'whole',
+            'commission_cap': 0.05  # Default to 5%
         }
 
     def process_form_data(self, form):
-        # This method now manually processes fields to include 'share_type'
         form_data = form.to_dict()
         processed_data = {}
         error = None
         
         try:
             # Process decimal fields
-            decimal_fields = ['total_capital', 'share_price', 'commission_fee', 'annualized_volatility']
+            decimal_fields = ['total_capital', 'share_price', 'commission_fee', 'annualized_volatility', 'commission_cap']
             for field in decimal_fields:
                 value = self._safe_decimal_conversion(form_data.get(field))
                 if value is None:
-                    return None, form_data, {"error": f"{field.replace('_', ' ').title()} must be a valid number."}
+                    # Provide a more specific error message
+                    return None, form_data, {"error": f"A valid number for '{field.replace('_', ' ').title()}' is required."}
                 processed_data[field] = value
             
             # Process the share_type string field
@@ -239,16 +240,15 @@ class DCAOptimizerWebCalculator(WebCalculator):
         return processed_data, form_data, error
 
     def calculate(self, processed_data):
-        # The 'share_type' is now in processed_data and will be passed to the calculator
         result = dca_optimizer.calculate_optimal_dca(**processed_data)
         if 'error' in result:
             return result
         
-        for key in ['trigger_percentage', 'capital_per_trade']:
-            if key in result and isinstance(result[key], Decimal):
-                result[key] = float(result[key])
+        # Convert all decimal values in the result dictionary to float for JSON compatibility
+        for key, value in result.items():
+            if isinstance(value, Decimal):
+                result[key] = float(value)
         
-        # We don't need to format total_shares_bought here, the template handles it
         return result
 
 class CapitalGainsWebCalculator(WebCalculator):

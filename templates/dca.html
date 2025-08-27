@@ -50,6 +50,16 @@
                         </label>
                         <input type="number" name="commission_fee" id="commission_fee" value="{{ form_data.commission_fee | default(5) }}" step="any" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                     </div>
+                     <div>
+                        <label for="commission_cap" class="flex items-center text-sm font-medium text-gray-400">
+                            Max Commission Cap (as decimal)
+                            <span class="tooltip ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-500" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.29-.071c-.293-.07-.352-.176-.288-.469l.738-3.468c.064-.293-.006-.399-.287-.47L8 9.58l-.205-1.022L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>
+                                <span class="tooltiptext">The maximum percentage of your total capital that can be spent on commission fees. Enter 0.05 for 5%. Must be between 0 and 1.</span>
+                            </span>
+                        </label>
+                        <input type="number" name="commission_cap" id="commission_cap" value="{{ form_data.commission_cap | default(0.05) }}" step="0.01" min="0" max="1" class="mt-1 block w-full px-3 py-2 bg-gray-800 border-none rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
                     <div>
                         <label for="annualized_volatility" class="flex items-center text-sm font-medium text-gray-400">
                             Annualized Volatility
@@ -138,9 +148,9 @@
     </div>
     <div class="mt-8 bg-gray-800/50 p-8 rounded-2xl fade-in-delay">
         <h2 class="text-2xl font-bold text-white mb-4">How It's Calculated</h2>
-        <p class="text-gray-400">The optimizer finds the ideal number of trades by balancing two key constraints to maximize efficiency:</p>
+        <p class="text-gray-400">The optimizer finds the ideal number of trades by balancing three key constraints to maximize efficiency:</p>
         <div class="mt-4 text-gray-400 space-y-2">
-            <p><strong class="text-white">1. Commission Cap:</strong> It finds the maximum number of trades where total commission fees will not exceed 5% of your capital. This prevents fees from significantly eating into your investment.</p>
+            <p><strong class="text-white">1. Commission Cap:</strong> It finds the maximum number of trades where total fees will not exceed <strong class="text-white">{{ "{:.0%}".format(form_data.commission_cap | float) }}</strong> of your capital. This prevents fees from significantly eating into your investment.</p>
             <p><strong class="text-white">2. Trade Viability:</strong> It ensures that each individual trade is large enough to be practical. For <strong class="text-white">whole shares</strong>, each trade must be able to afford at least one full share plus the commission. For <strong class="text-white">fractional shares</strong>, the amount invested per trade must simply be greater than the commission fee.</p>
             <p><strong class="text-white">3. Divisibility (for Whole Shares):</strong> After finding the optimal number of trades, the calculator adjusts the <strong class="text-white">Total Shares to be Bought</strong> to ensure it is perfectly divisible by the number of trades. This guarantees every trade consists of a whole number of shares.</p>
         </div>

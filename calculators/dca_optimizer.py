@@ -1,15 +1,17 @@
 import math
 from decimal import Decimal
 
-def calculate_optimal_dca(total_capital, share_price, commission_fee, annualized_volatility, share_type='whole'):
+def calculate_optimal_dca(total_capital, share_price, commission_fee, annualized_volatility, share_type='whole', commission_cap=Decimal('0.05')):
     """
-    Calculates the optimal number of trades and the price-drop trigger for a DCA strategy.
+    Calculates the optimal number of trades and the price-drop trigger for a DCA strategy,
+    respecting a user-defined commission cap.
     """
     # Ensure all inputs are Decimal for precision
     total_capital = Decimal(total_capital)
     share_price = Decimal(share_price)
     commission_fee = Decimal(commission_fee)
     annualized_volatility = Decimal(annualized_volatility)
+    commission_cap = Decimal(commission_cap)
 
     if total_capital <= 0:
         return {"error": "Total Capital must be a positive number."}
@@ -17,10 +19,12 @@ def calculate_optimal_dca(total_capital, share_price, commission_fee, annualized
         return {"error": "Current Share Price must be a positive number."}
     if commission_fee < 0:
         return {"error": "Commission Fee per Trade cannot be negative."}
+    if not (Decimal('0') <= commission_cap <= Decimal('1')):
+        return {"error": "Commission Cap must be between 0 (0%) and 1 (100%)."}
 
-    # Constraint 1: Total commissions should not exceed 5% of total capital.
+    # Constraint 1: Total commissions should not exceed the user-defined cap.
     if commission_fee > 0:
-        n_commission_cap = math.floor((Decimal('0.05') * total_capital) / commission_fee)
+        n_commission_cap = math.floor((commission_cap * total_capital) / commission_fee)
     else:
         n_commission_cap = float('inf') 
 
@@ -82,7 +86,7 @@ def calculate_optimal_dca(total_capital, share_price, commission_fee, annualized
     total_commissions = commission_fee * n_optimal
     cost_of_shares = total_shares_bought * share_price
     total_money_spent = cost_of_shares + total_commissions
-    money_spent_per_trade = total_money_spent / n_optimal
+    money_spent_per_trade = total_money_spent / n_optimal if n_optimal > 0 else 0
     capital_leftover = total_capital - total_money_spent
     shares_per_trade = total_shares_bought / n_optimal if n_optimal > 0 else 0
 
@@ -100,5 +104,6 @@ def calculate_optimal_dca(total_capital, share_price, commission_fee, annualized
         "money_spent_per_trade": money_spent_per_trade,
         "total_commissions": total_commissions,
         "capital_leftover": capital_leftover,
-        "shares_per_trade": shares_per_trade
+        "shares_per_trade": shares_per_trade,
+        "commission_cap": commission_cap # Pass this back for display purposes
     }
