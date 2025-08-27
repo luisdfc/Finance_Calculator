@@ -293,7 +293,23 @@ class OptionsStrategyWebCalculator(WebCalculator):
             'put_price_move': 5,
             'stock_price_exercise': 165,
             'strike_price_exercise': 155,
-            'premium_exercise': 10.50
+            'premium_exercise': 10.50,
+            's_bs': 100,
+            'k_bs': 100,
+            't_bs': 90, # Days
+            'r_bs': 5, # Percentage
+            'sigma_bs': 20, # Percentage
+            'option_type_bs': 'call',
+            'market_premium_bs': 5.0,
+            'current_stock_price_adv': 100,
+            'delta_adv': 0.5,
+            'gamma_adv': 0.08,
+            'theta_adv': -0.05,
+            'vega_adv': 0.12,
+            'bid_ask_spread_adv': 0.05,
+            'expected_iv_change_adv': -2,
+            'days_to_hold_adv': 10,
+            'option_type_adv': 'call'
         }
 
     def process_form_data(self, form):
@@ -316,12 +332,35 @@ class OptionsStrategyWebCalculator(WebCalculator):
                     'option_premium': 'premium_exercise'
                 }
                 error_msg = "All fields for Sell vs. Exercise must be valid numbers."
+            elif calculation_type == 'black_scholes':
+                fields_map = {
+                    's': 's_bs', 'k': 'k_bs', 't': 't_bs', 'r': 'r_bs', 'sigma': 'sigma_bs', 'market_premium': 'market_premium_bs'
+                }
+                error_msg = "All fields for Black-Scholes must be valid numbers."
+                processed_data['option_type'] = form_data.get('option_type_bs', 'call')
+            elif calculation_type == 'advanced_breakeven':
+                fields_map = {
+                    'current_stock_price': 'current_stock_price_adv',
+                    'delta': 'delta_adv',
+                    'gamma': 'gamma_adv',
+                    'theta': 'theta_adv',
+                    'vega': 'vega_adv',
+                    'bid_ask_spread': 'bid_ask_spread_adv',
+                    'expected_iv_change': 'expected_iv_change_adv',
+                    'days_to_hold': 'days_to_hold_adv',
+                }
+                error_msg = "All fields for Advanced Breakeven must be valid numbers."
+                processed_data['option_type'] = form_data.get('option_type_adv', 'call')
             else:
                 return None, form_data, {"error": "Invalid calculation type selected."}
 
             for key, form_field in fields_map.items():
                 value = self._safe_decimal_conversion(form_data.get(form_field))
                 if value is None:
+                    # market_premium is optional
+                    if key == 'market_premium':
+                        processed_data[key] = None
+                        continue
                     return None, form_data, {"error": error_msg}
                 processed_data[key] = value
             
@@ -336,12 +375,18 @@ class OptionsStrategyWebCalculator(WebCalculator):
             result = options_strategy.calculate_expected_move(**processed_data)
         elif calculation_type == 'sell_vs_exercise':
             result = options_strategy.compare_sell_vs_exercise(**processed_data)
+        elif calculation_type == 'black_scholes':
+            result = options_strategy.calculate_black_scholes(**processed_data)
+        elif calculation_type == 'advanced_breakeven':
+            result = options_strategy.calculate_advanced_breakeven(processed_data)
         else:
             return {"error": "Invalid calculation type."}
         
         if result:
             result['type'] = calculation_type
-            for key, value in result.items():
-                if isinstance(value, Decimal):
-                    result[key] = float(value)
+            # Keep Decimal for precision where possible, but handle float conversion for chart data
+            if 'chart_data' not in result:
+                for key, value in result.items():
+                    if isinstance(value, Decimal):
+                        result[key] = float(value)
         return result
