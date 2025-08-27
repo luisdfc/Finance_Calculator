@@ -33,9 +33,11 @@ Decide if it’s worth selling an asset to reinvest elsewhere by calculating the
 ---
 
 ### 4. ⚖️ Options Strategy Calculator
-A dual-functionality tool for options traders:
+A comprehensive, multi-functional tool designed for options traders to analyze trades from every angle:
 - **Market's Expected Move**: Estimate the potential price swing of a stock based on the prices of its at-the-money options.
 - **Sell vs. Exercise**: Compare the financial outcomes of selling your option versus exercising it to help you maximize your profit.
+- **Black-Scholes Option Pricing**: Calculate the theoretical value of an option using the Black-Scholes model and compare it against the current market premium to identify potentially overvalued or undervalued options.
+- **Advanced P/L Breakeven**: Determine the exact stock price required to break even on a trade before expiration. This calculator accounts for time decay (Theta), changes in implied volatility (Vega), and transaction costs to provide a precise target for your trade.
 
 ---
 
