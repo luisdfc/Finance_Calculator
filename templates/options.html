@@ -274,10 +274,15 @@
                             {% if result.error %}
                                 <div class="bg-red-900/50 border border-red-500/30 text-red-300 p-4 rounded-lg h-full flex flex-col justify-center" role="alert"><p class="font-bold">Error</p><p>{{ result.error }}</p></div>
                             {% else %}
-                            <div class="bg-gray-900/50 p-6 rounded-lg text-center h-full flex flex-col justify-center">
-                                <h3 class="text-xl font-semibold text-white mb-2">Implied Volatility (IV) Result</h3>
-                                <p class="text-5xl font-bold text-indigo-400 my-2">{{ "{:.2%}".format(result.implied_volatility) }}</p>
-                                <p class="text-gray-400 max-w-md mx-auto">{{ result.explanation }}</p>
+                            <div class="bg-gray-900/50 p-6 rounded-lg h-full">
+                                <div class="text-center">
+                                    <h3 class="text-xl font-semibold text-white mb-2">Implied Volatility (IV) Result</h3>
+                                    <p class="text-5xl font-bold text-indigo-400 my-2">{{ "{:.2%}".format(result.implied_volatility) }}</p>
+                                    <p class="text-gray-400 max-w-md mx-auto">{{ result.explanation }}</p>
+                                </div>
+                                {% if result.chart_data %}
+                                <div class="mt-4 h-80 w-full"><canvas id="ivChart"></canvas></div>
+                                {% endif %}
                             </div>
                             {% endif %}
                         {% else %}
@@ -490,7 +495,7 @@
         const tabs = document.querySelectorAll('.tab-button');
         const tabPanels = document.querySelectorAll('.tab-panel');
         const explanationContent = document.getElementById('explanation-content');
-        let charts = { breakeven: null, pl: null };
+        let charts = { breakeven: null, pl: null, iv: null };
 
         const explanations = {
             expected_move: `
@@ -632,6 +637,70 @@
             } catch (e) { console.error('Failed to parse or render P/L chart data:', e); }
         }
 
+        function renderIvChart() {
+            const ivChartDataJson = '{{ result.chart_data | tojson | safe if result and result.type == "implied_volatility" and result.chart_data else "" }}';
+            if (!ivChartDataJson) return;
+
+            try {
+                const chartData = JSON.parse(ivChartDataJson);
+                const ctx = document.getElementById('ivChart').getContext('2d');
+                
+                if (charts.iv) charts.iv.destroy();
+
+                charts.iv = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: true, text: 'Option Price vs. Implied Volatility', color: '#e0e0e0', font: { size: 16 } },
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (c) => `Price: €${c.parsed.y.toFixed(2)}`,
+                                    title: (c) => `Implied Volatility: ${c[0].label}`
+                                }
+                            },
+                            annotation: {
+                                annotations: {
+                                    line1: {
+                                        type: 'line',
+                                        xMin: chartData.current_iv,
+                                        xMax: chartData.current_iv,
+                                        borderColor: 'rgba(239, 68, 68, 0.8)',
+                                        borderWidth: 2,
+                                        borderDash: [6, 6],
+                                        label: {
+                                            content: `Calculated IV (${chartData.current_iv.toFixed(1)}%)`,
+                                            enabled: true,
+                                            position: 'start',
+                                            yAdjust: -10,
+                                            color: '#f0f0f0',
+                                            backgroundColor: 'rgba(239, 68, 68, 0.7)'
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'category', // Make sure x-axis is treated as category
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                ticks: { color: '#9ca3af' },
+                                title: { display: true, text: 'Implied Volatility (%)', color: '#9ca3af' }
+                            },
+                            y: {
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                ticks: { color: '#9ca3af', callback: (v) => '€' + v.toFixed(2) },
+                                title: { display: true, text: 'Theoretical Option Price (€)', color: '#9ca3af' }
+                            }
+                        }
+                    }
+                });
+            } catch (e) { console.error('Failed to parse or render IV chart data:', e); }
+        }
+
         function switchTab(targetId) {
             tabs.forEach(tab => {
                 const isSelected = tab.dataset.tabTarget === targetId;
@@ -655,6 +724,12 @@
             // *** THE FIX: Render charts directly after the panel is made visible ***
             if (targetId === 'advanced_breakeven') {
                 renderBreakevenChart();
+            }
+            if (targetId === 'black_scholes') {
+                renderPlChart();
+            }
+            if (targetId === 'implied_volatility') {
+                renderIvChart();
             }
             if (targetId === 'black_scholes') {
                 renderPlChart();

@@ -253,18 +253,23 @@ def calculate_implied_volatility(s, k, t, r, market_premium, option_type, style=
             return price_result
         
         price = price_result['price']
-        vega = price_result['greeks']['vega'] * 100 # Vega is per 1%, so we scale it
+        # Vega is per 1%, so we scale it for the calculation
+        vega = price_result['greeks']['vega'] * 100
         
         diff = price - market_premium
         if abs(diff) < PRECISION:
             explanation = f"An Implied Volatility of {sigma:.2%} suggests that the market expects the stock to have an annualized price swing of this magnitude. A high IV indicates expectations of large price movements (making options more expensive), while a low IV suggests the market expects the price to be more stable."
+            
+            # *** NEW: Generate chart data upon successful calculation ***
+            chart_data = _calculate_price_vs_iv_chart(s, k, t, r, option_type, sigma)
+
             return {
                 'implied_volatility': sigma,
-                'explanation': explanation
+                'explanation': explanation,
+                'chart_data': chart_data # <-- Add chart data to the result
             }
 
         if vega == 0:
-            # Cannot converge if vega is zero, fallback to a simpler error
             return {"error": "Could not find a solution for Implied Volatility. The option may be too far in- or out-of-the-money."}
             
         sigma = sigma - diff / vega
@@ -402,4 +407,31 @@ def calculate_probabilities(s, k, t, r, sigma, target_price, option_type):
     return {
         "prob_itm": prob_itm,
         "prob_touch": prob_touch
+    }
+
+def _calculate_price_vs_iv_chart(s, k, t, r, option_type, current_iv):
+    """
+    Generates data for a chart showing option price vs. implied volatility.
+    """
+    iv_range = [Decimal(i) for i in range(5, 101, 5)] # IV from 5% to 100% in 5% steps
+    prices = []
+    for iv in iv_range:
+        # We only need the price, not the greeks, for this calculation
+        price_result = calculate_black_scholes(s, k, t, r, iv, option_type, style='european')
+        if 'price' in price_result:
+            prices.append(float(price_result['price']))
+        else:
+            prices.append(None) # Handle cases where price can't be calculated
+
+    return {
+        'labels': [f"{iv}%" for iv in iv_range],
+        'datasets': [{
+            'label': 'Theoretical Option Price',
+            'data': prices,
+            'borderColor': 'rgba(79, 70, 229, 1)',
+            'backgroundColor': 'rgba(79, 70, 229, 0.2)',
+            'fill': True,
+            'tension': 0.4,
+        }],
+        'current_iv': float(current_iv * 100) # Pass the calculated IV for annotation
     }
