@@ -34,10 +34,14 @@ Decide if it’s worth selling an asset to reinvest elsewhere by calculating the
 
 ### 4. ⚖️ Options Strategy Calculator
 A comprehensive, multi-functional tool designed for options traders to analyze trades from every angle:
-- **Market's Expected Move**: Estimate the potential price swing of a stock based on the prices of its at-the-money options.
-- **Sell vs. Exercise**: Compare the financial outcomes of selling your option versus exercising it to help you maximize your profit.
-- **Black-Scholes Option Pricing**: Calculate the theoretical value of an option using the Black-Scholes model and compare it against the current market premium to identify potentially overvalued or undervalued options.
-- **Advanced P/L Breakeven**: Determine the exact stock price required to break even on a trade before expiration. This calculator accounts for time decay (Theta), changes in implied volatility (Vega), and transaction costs to provide a precise target for your trade.
+
+- **Market's Expected Move**: Estimate the potential price swing of a stock based on the prices of its at-the-money (ATM) straddle.
+- **Sell vs. Exercise**: Compare the financial outcomes of selling an in-the-money option versus exercising it to help maximize your profit by capturing any remaining extrinsic value.
+- **Option Pricing Models**: Calculate the theoretical value of both European (Black-Scholes) and American (Binomial Tree) options. It includes a detailed breakdown of the Greeks (**Delta, Gamma, Theta, Vega, Rho**) with clear explanations to help you understand the option's risk and reward profile.
+- **Implied Volatility (IV) Analysis**: Reverse-engineer an option's market price to find the implied volatility, giving you insight into the market's expectation of future price swings. This section now includes a graph plotting the option's price against different IV levels.
+- **IV Rank**: Contextualize the current IV by comparing it to its 52-week high and low, helping you determine if options are relatively cheap or expensive.
+- **Advanced P/L Breakeven**: Determine the exact stock price movement required to break even on a trade before expiration. This calculator accounts for time decay (Theta), changes in implied volatility (Vega), and transaction costs to provide a precise target for your trade.
+- **Probability Calculator**: Estimate the probability of an option expiring in-the-money (using Delta) and the likelihood of the underlying stock touching a specific price target before expiration.
 
 ---
 
