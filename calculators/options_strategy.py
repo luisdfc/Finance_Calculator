@@ -384,17 +384,20 @@ def calculate_probabilities(s, k, t, r, sigma, target_price, option_type):
     r_dec = r / Decimal('100')
     sigma_dec = sigma / Decimal('100')
     
+    # Risk-neutral drift
     mu = r_dec - Decimal('0.5') * sigma_dec**2
     
     # Check if target is above or below current price to determine barrier type
     if target_price >= s: # Upper barrier (H)
-        d1 = (-(target_price / s).ln() + mu * t_years) / (sigma_dec * t_years.sqrt())
-        d2 = (-(target_price / s).ln() - mu * t_years) / (sigma_dec * t_years.sqrt())
-        prob_touch = _norm_cdf_decimal(d1) + (s / target_price).exp(Decimal('2') * mu / sigma_dec) * _norm_cdf_decimal(d2)
+        d1 = (-(s / target_price).ln() - mu * t_years) / (sigma_dec * t_years.sqrt())
+        d2 = (-(s / target_price).ln() + mu * t_years) / (sigma_dec * t_years.sqrt())
+        # --- FIX IS HERE ---
+        prob_touch = _norm_cdf_decimal(-d1) + (s / target_price)**(Decimal('2') * mu / (sigma_dec**2)) * _norm_cdf_decimal(d2)
     else: # Lower barrier (L)
-        d1 = ((target_price / s).ln() - mu * t_years) / (sigma_dec * t_years.sqrt())
-        d2 = ((target_price / s).ln() + mu * t_years) / (sigma_dec * t_years.sqrt())
-        prob_touch = _norm_cdf_decimal(d1) + (s / target_price).exp(Decimal('2') * mu / sigma_dec) * _norm_cdf_decimal(d2)
+        d1 = ((s / target_price).ln() + mu * t_years) / (sigma_dec * t_years.sqrt())
+        d2 = ((s / target_price).ln() - mu * t_years) / (sigma_dec * t_years.sqrt())
+        # --- FIX IS HERE ---
+        prob_touch = _norm_cdf_decimal(d1) + (s / target_price)**(Decimal('2') * mu / (sigma_dec**2)) * _norm_cdf_decimal(-d2)
 
     return {
         "prob_itm": prob_itm,
