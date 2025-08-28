@@ -357,3 +357,46 @@ def _solve_for_move_plot(gamma, delta, total_headwind, option_type):
     else:
         if move1 <= 0 and move2 <= 0: return max(move1, move2)
         return move2 if move2 <= 0 else move1
+    
+def calculate_probabilities(s, k, t, r, sigma, target_price, option_type):
+    """
+    Calculates the probability of an option expiring in-the-money and the
+    probability of the stock price touching a target level before expiration.
+    """
+    if s <= 0 or k <= 0 or t <= 0 or sigma <= 0 or target_price <= 0:
+        return {'error': 'All price, time, and volatility inputs must be positive values.'}
+
+    # 1. Probability of expiring In-The-Money (using Delta)
+    bs_result = calculate_black_scholes(s, k, t, r, sigma, option_type)
+    if 'error' in bs_result:
+        prob_itm = Decimal('0') # Default on error
+    else:
+        delta = bs_result['greeks']['delta']
+        if option_type == 'call':
+            prob_itm = delta
+        else: # put
+            prob_itm = Decimal('1') - abs(delta)
+
+    # 2. Probability of Touching a Target Price
+    # This uses a standard formula for the probability of a stock price hitting a
+    # barrier (H) before expiration, assuming a risk-neutral drift.
+    t_years = t / Decimal('365')
+    r_dec = r / Decimal('100')
+    sigma_dec = sigma / Decimal('100')
+    
+    mu = r_dec - Decimal('0.5') * sigma_dec**2
+    
+    # Check if target is above or below current price to determine barrier type
+    if target_price >= s: # Upper barrier (H)
+        d1 = (-(target_price / s).ln() + mu * t_years) / (sigma_dec * t_years.sqrt())
+        d2 = (-(target_price / s).ln() - mu * t_years) / (sigma_dec * t_years.sqrt())
+        prob_touch = _norm_cdf_decimal(d1) + (s / target_price).exp(Decimal('2') * mu / sigma_dec) * _norm_cdf_decimal(d2)
+    else: # Lower barrier (L)
+        d1 = ((target_price / s).ln() - mu * t_years) / (sigma_dec * t_years.sqrt())
+        d2 = ((target_price / s).ln() + mu * t_years) / (sigma_dec * t_years.sqrt())
+        prob_touch = _norm_cdf_decimal(d1) + (s / target_price).exp(Decimal('2') * mu / sigma_dec) * _norm_cdf_decimal(d2)
+
+    return {
+        "prob_itm": prob_itm,
+        "prob_touch": prob_touch
+    }

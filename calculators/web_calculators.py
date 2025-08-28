@@ -296,7 +296,8 @@ class OptionsStrategyWebCalculator(WebCalculator):
             'current_iv_rank': 35, 'iv_high_rank': 60, 'iv_low_rank': 20,
             'current_stock_price_adv': 100, 'delta_adv': 0.5, 'gamma_adv': 0.08, 'theta_adv': -0.05,
             'vega_adv': 0.12, 'bid_ask_spread_adv': 0.05, 'expected_iv_change_adv': -2,
-            'days_to_hold_adv': 10, 'option_type_adv': 'call'
+            'days_to_hold_adv': 10, 'option_type_adv': 'call',
+            's_prob': 100, 'k_prob': 105, 'target_price_prob': 110, 't_prob': 30, 'sigma_prob': 25, 'option_type_prob': 'call'
         }
     
     def _validate_options_inputs(self, data, calc_type):
@@ -342,6 +343,9 @@ class OptionsStrategyWebCalculator(WebCalculator):
             elif calculation_type == 'advanced_breakeven':
                 fields_map = { 'current_stock_price': 'current_stock_price_adv', 'delta': 'delta_adv', 'gamma': 'gamma_adv', 'theta': 'theta_adv', 'vega': 'vega_adv', 'bid_ask_spread': 'bid_ask_spread_adv', 'expected_iv_change': 'expected_iv_change_adv', 'days_to_hold': 'days_to_hold_adv' }
                 processed_data['option_type'] = form_data.get('option_type_adv', 'call')
+            elif calculation_type == 'probability':
+                fields_map = { 's': 's_prob', 'k': 'k_prob', 'target_price': 'target_price_prob', 't': 't_prob', 'r': 'r_prob', 'sigma': 'sigma_prob' }
+                processed_data['option_type'] = form_data.get('option_type_prob', 'call')
             else:
                 return None, form_data, {"error": "Invalid calculation type selected."}
 
@@ -375,6 +379,8 @@ class OptionsStrategyWebCalculator(WebCalculator):
             result = options_strategy.calculate_iv_rank(**processed_data)
         elif calculation_type == 'advanced_breakeven':
             result = options_strategy.calculate_advanced_breakeven(processed_data)
+        elif calculation_type == 'probability':
+            result = options_strategy.calculate_probabilities(**processed_data)     
         else:
             return {"error": "Invalid calculation type."}
         
